@@ -8,7 +8,7 @@ Bulk-download **all available Apple product schematics and boardview files** (iP
 
 ## Project Structure
 
-```
+```text
 apple-all-schematic/
 ├── src/
 │   └── tg_schematic_downloader.py   ← main script
@@ -31,7 +31,7 @@ apple-all-schematic/
 
 ### 1. Get Telegram API credentials (free, 2 min)
 
-1. Go to **https://my.telegram.org**
+1. Go to **<https://my.telegram.org>**
 2. Log in with your phone number
 3. Click **"API development tools"** → **"Create new application"**
 4. Fill in any name/platform → Submit
@@ -43,7 +43,8 @@ export TG_API_HASH=abcdef1234567890abcdef1234567890
 ```
 
 Or create a `.env` file:
-```
+
+```dotenv
 TG_API_ID=12345678
 TG_API_HASH=abcdef1234567890abcdef1234567890
 ```
@@ -90,28 +91,32 @@ python tg_schematic_downloader.py --list-channels
 ## Channels Being Scraped
 
 ### Laptop / Desktop (MacBook, iMac, Mac Mini)
-| Channel | Description |
-|---|---|
-| `@schematicslaptop` | Largest archive — 10,000+ posts, PDF + boardview files |
-| `@biosarchive` | Same admin, BIOS + schematics, Apple Mac Mini confirmed |
-| `@BIOSARCHIVE_PHOTOS` | Companion channel, occasional file attachments |
-| `@freeschematicdiagram` | Mixed laptops + phones |
+
+| Channel                 | Description                                             |
+| ----------------------- | ------------------------------------------------------- |
+| `@schematicslaptop`     | Largest archive — 10,000+ posts, PDF + boardview files  |
+| `@biosarchive`          | Same admin, BIOS + schematics, Apple Mac Mini confirmed |
+| `@BIOSARCHIVE_PHOTOS`   | Companion channel, occasional file attachments          |
+| `@freeschematicdiagram` | Mixed laptops + phones                                  |
 
 ### Phone / Mobile (iPhone, iPad, Apple Watch)
-| Channel | Description |
-|---|---|
+
+| Channel                   | Description                                       |
+| ------------------------- | ------------------------------------------------- |
 | `@SMART_PHONE_SCHEMATICS` | Dedicated smartphone schematics, iPhone confirmed |
-| `@mobileshematic` | Mobile schematics archive |
-| `@schematicmobile` | Mixed mobile schematic files |
+| `@mobileshematic`         | Mobile schematics archive                         |
+| `@schematicmobile`        | Mixed mobile schematic files                      |
 
 ---
 
 ## What Gets Downloaded
 
 ### File types
+
 `.pdf` `.zip` `.rar` `.7z` `.brd` `.bvr` `.bdv` `.cad` `.fz` `.asc` `.tvw` `.pcb`
 
 ### Apple keyword filter (`--apple` flag)
+
 Matches filenames **and** message captions against:
 
 - **Product names:** `iphone`, `ipad`, `macbook`, `imac`, `mac mini`, `mac pro`, `mac studio`, `apple watch`, `airpods`, `apple tv`, `homepod`, `ipod`
@@ -127,7 +132,7 @@ Matches filenames **and** message captions against:
 
 Files are organized by channel:
 
-```
+```text
 data/downloads/
 ├── schematicslaptop/
 │   ├── Apple_MacBook_Pro_820-02757.rar
@@ -153,6 +158,7 @@ python tg_schematic_downloader.py --apple --resume
 ```
 
 State file format:
+
 ```json
 {
   "downloaded": {
@@ -166,12 +172,12 @@ State file format:
 
 ## Expected Results
 
-| Channel | Est. Total Messages | Est. Apple Files |
-|---|---|---|
-| `@schematicslaptop` | ~12,000 | ~200–400 |
-| `@biosarchive` | ~8,000 | ~100–200 |
-| `@SMART_PHONE_SCHEMATICS` | ~5,000 | ~500–1000 |
-| `@mobileshematic` | ~3,000 | ~200–500 |
+| Channel                   | Est. Total Messages | Est. Apple Files |
+| ------------------------- | ------------------- | ---------------- |
+| `@schematicslaptop`       | ~12,000             | ~200–400         |
+| `@biosarchive`            | ~8,000              | ~100–200         |
+| `@SMART_PHONE_SCHEMATICS` | ~5,000              | ~500–1000        |
+| `@mobileshematic`         | ~3,000              | ~200–500         |
 
 Full run without `--limit` may take **1–4 hours** depending on connection. All files are raw originals with **no watermarks**.
 
@@ -181,19 +187,19 @@ Full run without `--limit` may take **1–4 hours** depending on connection. All
 
 If channels don't have what you need:
 
-| Source | Coverage | Notes |
-|---|---|---|
-| `badcaps.net` forum | MacBook 2008–2015 | Free account needed, direct RAR attachments |
-| `apple-schematic.se` | MacBook Air/Pro 2008–2015 | No auth, `wget -r` works |
-| `oldergeeks.com` | Selective newer models | No auth, `download.php?id=XXXX` |
-| `KiKiHUN1/Mega-Schematics-Downloader` | Mixed collection | Grep `mainwindow.cs` for Mega link → `megacmd` |
-| `XinZhiZao` (xinzhizao.vip) | **Everything** incl. M3/latest | Paid ~$3/month, 1hr free trial |
+| Source                                | Coverage                       | Notes                                          |
+| ------------------------------------- | ------------------------------ | ---------------------------------------------- |
+| `badcaps.net` forum                   | MacBook 2008–2015              | Free account needed, direct RAR attachments    |
+| `apple-schematic.se`                  | MacBook Air/Pro 2008–2015      | No auth, `wget -r` works                       |
+| `oldergeeks.com`                      | Selective newer models         | No auth, `download.php?id=XXXX`                |
+| `KiKiHUN1/Mega-Schematics-Downloader` | Mixed collection               | Grep `mainwindow.cs` for Mega link → `megacmd` |
+| `XinZhiZao` (xinzhizao.vip)           | **Everything** incl. M3/latest | Paid ~$3/month, 1hr free trial                 |
 
 ---
 
 ## .env.example
 
-```
+```dotenv
 TG_API_ID=your_api_id_here
 TG_API_HASH=your_api_hash_here
 ```

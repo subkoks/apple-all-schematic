@@ -31,7 +31,7 @@ apple-all-schematic/
 
 ### 1. Get Telegram API credentials (free, 2 min)
 
-1. Go to **https://my.telegram.org**
+1. Go to **<https://my.telegram.org>**
 2. Log in with your phone number
 3. Click **"API development tools"** → **"Create new application"**
 4. Fill in any name/platform → Submit
@@ -99,12 +99,14 @@ python tg_schematic_downloader.py --apple --limit 5000
 ## Channels Being Scraped
 
 ### Laptop / Desktop (MacBook, iMac, Mac Mini)
+
 - `@schematicslaptop` - Largest archive — 10,000+ posts, PDF + boardview files
 - `@biosarchive` - Same admin, BIOS + schematics, Apple Mac Mini confirmed
 - `@BIOSARCHIVE_PHOTOS` - Companion channel, occasional file attachments
 - `@freeschematicdiagram` - Mixed laptops + phones
 
 ### Phone / Mobile (iPhone, iPad, Apple Watch)
+
 - `@SMART_PHONE_SCHEMATICS` - Dedicated smartphone schematics, iPhone confirmed
 - `@mobileshematic` - Mobile schematics archive
 - `@schematicmobile` - Mixed mobile schematic files
@@ -112,9 +114,11 @@ python tg_schematic_downloader.py --apple --limit 5000
 ## What Gets Downloaded
 
 ### File types
+
 `.pdf` `.zip` `.rar` `.7z` `.brd` `.bvr` `.bdv` `.cad` `.fz` `.asc` `.tvw` `.pcb`
 
 ### Apple keyword filter (`--apple` flag)
+
 Matches filenames **and** message captions against:
 
 - **Product names:** `iphone`, `ipad`, `macbook`, `imac`, `mac mini`, `mac pro`, `mac studio`, `apple watch`, `airpods`, `apple tv`, `homepod`, `ipod`
@@ -128,7 +132,7 @@ Matches filenames **and** message captions against:
 
 Files are organized by channel:
 
-```
+```text
 data/downloads/
 ├── schematicslaptop/
 │   ├── Apple_MacBook_Pro_820-02757.rar
@@ -153,25 +157,26 @@ python tg_schematic_downloader.py --apple --resume
 
 ## Expected Results
 
-| Channel | Est. Total Messages | Est. Apple Files |
-|---|---|---|
-| `@schematicslaptop` | ~12,000 | ~200–400 |
-| `@biosarchive` | ~8,000 | ~100–200 |
-| `@SMART_PHONE_SCHEMATICS` | ~5,000 | ~500–1000 |
-| `@mobileshematic` | ~3,000 | ~200–500 |
+| Channel                   | Est. Total Messages | Est. Apple Files |
+| ------------------------- | ------------------- | ---------------- |
+| `@schematicslaptop`       | ~12,000             | ~200–400         |
+| `@biosarchive`            | ~8,000              | ~100–200         |
+| `@SMART_PHONE_SCHEMATICS` | ~5,000              | ~500–1000        |
+| `@mobileshematic`         | ~3,000              | ~200–500         |
 
 Full run without `--limit` may take **1–4 hours** depending on connection. All files are raw originals with **no watermarks**.
 
 ## Documentation
 
 For comprehensive project planning, instructions, and supplementary sources, see:
+
 - [goals/APPLE_ALL_SCHEMATIC_PLAN.md](goals/APPLE_ALL_SCHEMATIC_PLAN.md)
 
 ## Requirements
 
 - Python 3.10+
 - Telegram account
-- Free Telegram API credentials from https://my.telegram.org
+- Free Telegram API credentials from <https://my.telegram.org>
 
 ## License
 
