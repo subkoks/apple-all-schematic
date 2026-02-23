@@ -1,0 +1,24 @@
+# Data/output
+data/
+
+# Secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+
+# Telethon session files
+*.session*
+
+# Archives (downloaded files)
+*.zip
+*.rar
+*.7z
+
+# OS/Editor
+.DS_Store
+.idea/
+.vscode/
