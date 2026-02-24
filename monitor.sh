@@ -1,8 +1,9 @@
 #!/bin/bash
 # Monitor download progress in real-time
 
-DOWNLOAD_DIR="/Users/black.terminal/Projects/apple-all-schematic/data/downloads"
-STATE_FILE="/Users/black.terminal/Projects/apple-all-schematic/data/state.json"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DOWNLOAD_DIR="$SCRIPT_DIR/data/downloads"
+STATE_FILE="$SCRIPT_DIR/data/state.json"
 
 while true; do
     clear
