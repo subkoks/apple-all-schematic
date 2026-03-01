@@ -10,18 +10,22 @@
 
 ## Architecture
 
-- **Pattern:** Single async script with CLI argument parsing
-- **Entry point:** `src/tg_schematic_downloader.py` (245 lines)
+- **Pattern:** Single async script with CLI argument parsing + file organizer
+- **Entry point:** `src/tg_schematic_downloader.py` (291 lines) — Telegram downloader
+- **Organizer:** `src/organize_downloads.py` (320 lines) — categorizes files by brand/product
 - **State:** JSON file at `data/state.json` — tracks downloaded files by `channel:message_id`
 - **Auth:** Telethon session file at `data/tg_scraper_session.session`
-- **Downloads:** Organized by channel in `data/downloads/<channel_name>/`
+- **Downloads:** Raw files in `data/downloads/<channel_name>/`, organized in `data/organized/<category>/`
 
 ## Key Files to Read First
 
-- `src/tg_schematic_downloader.py` — entire application logic
+- `src/tg_schematic_downloader.py` — Telegram download logic
+- `src/organize_downloads.py` — file categorization by brand/product
+- `context/APPLE_PRODUCT_REFERENCE.md` — complete Apple product/board number reference
 - `goals/APPLE_ALL_SCHEMATIC_PLAN.md` — project plan, channel list, keyword reference
 - `.env.example` — required Telegram API credentials
-- `data/state.json` — resume state (275KB, 1800+ entries)
+- `data/state.json` — resume state (3200+ entries)
+- `data/organize_manifest.json` — undo manifest for file organization
 - `monitor.sh` — real-time download monitoring script
 
 ## Project Conventions
@@ -52,6 +56,10 @@
 - **Filter:** `python src/tg_schematic_downloader.py --filter iphone "820-02"`
 - **List channels:** `python src/tg_schematic_downloader.py --list-channels`
 - **Monitor:** `./monitor.sh`
+- **Organize:** `python src/organize_downloads.py` (move files into categorized folders)
+- **Organize preview:** `python src/organize_downloads.py --dry-run`
+- **Organize report:** `python src/organize_downloads.py --report`
+- **Organize undo:** `python src/organize_downloads.py --undo`
 
 ## Project-Specific Rules
 
@@ -59,7 +67,8 @@
 - State file (`state.json`) is critical — read it before any operations that modify download tracking
 - Telegram session file must stay in `data/` and stay gitignored
 - When adding new channels or keywords, update both the script constants and the plan doc
-- `data/downloads/` contains 6.7GB of files — do not read or index these directories
+- `data/downloads/` contains raw channel folders (empty after organization)
+- `data/organized/` contains 10GB of categorized files — do not read or index these directories
 - All async operations use `telethon` patterns — `async for`, `await client.method()`
 - When optimizing, preserve resume capability — state must be saved after each download
 - For new features, follow existing patterns: argparse flags, print-based logging, pathlib paths
