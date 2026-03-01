@@ -109,15 +109,16 @@ APPLE_PRODUCT_KEYWORDS: dict[str, list[str]] = {
 
 # ── Non-Apple Brand Keywords ─────────────────────────────────────────────────
 
+# Named brands — checked FIRST so they take priority over generic ODM codes
 BRAND_KEYWORDS: dict[str, list[str]] = {
     "Dell": [
         "dell", "alienware", "latitude", "inspiron", "xps ", "vostro", "precision",
     ],
+    "HP": [
+        "hewlett", "compaq", "pavilion", "elitebook", "probook", "envy", "spectre",
+    ],
     "Lenovo": [
         "lenovo", "thinkpad", "ideapad", "yoga ", "legion", "lcfc",
-        "nm-c", "nm-b", "nm-d", "nm-a",  # Lenovo ODM board codes (NM-C121, NM-B601)
-        "nm_c", "nm_b", "nm_d", "nm_a",  # Underscore variant
-        "ns-c",  # Lenovo NS-Cxxx boards
     ],
     "Asus": [
         "asus", " rog ", "zenbook", "vivobook", "tuf ",
@@ -137,6 +138,22 @@ BRAND_KEYWORDS: dict[str, list[str]] = {
     "MSI": [
         "megabook",
     ],
+}
+
+# Short brand keywords that need word-boundary regex — checked SECOND
+BRAND_REGEX_PATTERNS: dict[str, re.Pattern[str]] = {
+    "HP": re.compile(r"(?<![a-z])hp(?![a-z])", re.IGNORECASE),
+    "MSI": re.compile(r"(?<![a-z])msi(?![a-z])|(?<![a-z])ms-1[67]\d{2}(?![a-z0-9])|(?<![a-z])ms7[0-9]{3}", re.IGNORECASE),
+    "LG": re.compile(r"(?<![a-z])lg(?![a-z])", re.IGNORECASE),
+}
+
+# Generic ODM board codes and minor brands — checked LAST (lowest priority)
+ODM_BRAND_KEYWORDS: dict[str, list[str]] = {
+    "Lenovo": [
+        "nm-c", "nm-b", "nm-d", "nm-a",  # Lenovo ODM board codes (NM-C121, NM-B601)
+        "nm_c", "nm_b", "nm_d", "nm_a",  # Underscore variant
+        "ns-c",  # Lenovo NS-Cxxx boards
+    ],
     "Other_Brands": [
         "huawei", "xiaomi", "mipad", "vivo ", "oppo", "nokia",
         "motorola", "oneplus", "meizu", "zte ", "realme", "clevo",
@@ -149,11 +166,7 @@ BRAND_KEYWORDS: dict[str, list[str]] = {
     ],
 }
 
-# Short brand keywords that need word-boundary regex
-BRAND_REGEX_PATTERNS: dict[str, re.Pattern[str]] = {
-    "HP": re.compile(r"(?<![a-z])hp(?![a-z])|hewlett|compaq|pavilion|elitebook|probook|envy|spectre", re.IGNORECASE),
-    "MSI": re.compile(r"(?<![a-z])msi(?![a-z])|(?<![a-z])ms-1[67]\d{2}(?![a-z0-9])|(?<![a-z])ms7[0-9]{3}", re.IGNORECASE),
-    "LG": re.compile(r"(?<![a-z])lg(?![a-z])", re.IGNORECASE),
+ODM_BRAND_REGEX: dict[str, re.Pattern[str]] = {
     "Other_Brands": re.compile(r"(?<![a-z])ecs(?![a-z])|(?<![a-z])esc(?![a-z])", re.IGNORECASE),
 }
 
@@ -267,16 +280,25 @@ def classify(
         if "820" in name_lower or "051" in name_lower:
             return "Apple/Other_Apple", "keyword_match"
 
-    # Step 4: Non-Apple brand detection (substring keywords)
+    # Step 4a: Named brand detection (substring keywords — high priority)
     for brand, keywords in BRAND_KEYWORDS.items():
         if any(kw in name_lower for kw in keywords):
             return brand, "brand_match"
 
-    # Short brand keywords with regex boundaries
+    # Step 4b: Short brand keywords with regex boundaries
     for brand, pattern in BRAND_REGEX_PATTERNS.items():
         if pattern.search(name_lower):
             if brand == "LG":
                 return "Other_Brands", "brand_match"
+            return brand, "brand_match"
+
+    # Step 4c: Generic ODM board codes and minor brands (low priority)
+    for brand, keywords in ODM_BRAND_KEYWORDS.items():
+        if any(kw in name_lower for kw in keywords):
+            return brand, "brand_match"
+
+    for brand, pattern in ODM_BRAND_REGEX.items():
+        if pattern.search(name_lower):
             return brand, "brand_match"
 
     # Step 5: Fallback
