@@ -86,7 +86,8 @@ APPLE_PRODUCT_KEYWORDS: dict[str, list[str]] = {
         "mac studio", "mac_studio", "macstudio",
     ],
     "Apple/Computers/Other_Mac": [
-        "powerbook", "ibook", "emac", "xserve",
+        "powerbook", "ibook", "xserve",
+        # "emac" handled via regex to avoid matching "emachines"
     ],
     "Apple/Phones/iPhone": [
         "iphone", "i-phone",
@@ -128,7 +129,7 @@ BRAND_KEYWORDS: dict[str, list[str]] = {
         "sony", "vaio", "vgn-", "svf-", "sve-", "mbx-",
     ],
     "Acer": [
-        "acer", "aspire", "predator", "nitro ", "swift ",
+        "acer", "aspire", "predator", "nitro ", "swift ", "emachines",
     ],
     "Samsung": [
         "samsung", "galaxy", "sm-j", "sm-g", "sm-a", "sm-n", "sm-t",
@@ -247,6 +248,10 @@ def classify(
     for category, keywords in APPLE_PRODUCT_KEYWORDS.items():
         if any(kw in name_lower for kw in keywords):
             return category, "keyword_match"
+
+    # Apple eMac (word boundary to avoid matching "eMachines")
+    if re.search(r"(?<![a-z])emac(?![a-z])", name_lower):
+        return "Apple/Computers/Other_Mac", "keyword_match"
 
     # Generic "apple" or "mac" keyword (without matching "macbook" which is caught above)
     if "apple" in name_lower:
