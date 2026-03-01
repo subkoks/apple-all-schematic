@@ -4,6 +4,7 @@ tg_schematic_downloader.py — Bulk download Apple schematics from Telegram chan
 """
 
 import os
+import re
 import sys
 import json
 import asyncio
@@ -38,11 +39,18 @@ CHANNELS = {
         "biosarchive",
         "BIOSARCHIVE_PHOTOS",
         "freeschematicdiagram",
+        "notebookschematic",
+        "laptop_bios_schematic",
+        "alischematics",
+        "hrtechno",
     ],
     "mobile": [
         "SMART_PHONE_SCHEMATICS",
         "mobileshematic",
         "schematicmobile",
+    ],
+    "apple": [
+        "Mac_Shematic_Santale",
     ],
 }
 
@@ -50,22 +58,46 @@ APPLE_KEYWORDS = [
     # Product names
     "iphone", "ipad", "macbook", "imac", "mac mini", "mac pro",
     "mac studio", "apple watch", "airpods", "apple tv", "homepod", "ipod",
-    # Board numbers
-    "820-0", "051-",
-    # iPhone codenames
-    "n61", "n71", "d10", "d20", "d22", "n841", "d321", "d421",
-    "d52g", "d16", "d63", "d73", "d83",
+    "apple",
+    # Board numbers (820-xxxx covers all Apple logic boards)
+    "820-", "051-",
+    # iPhone codenames (longer ones safe as substrings, short ones via regex)
+    "n841", "d321", "d421", "d52g",
     # iPad codenames
-    "j72", "j217", "j120",
-    # Mac codenames
-    "j137", "j680", "j152", "j314", "j316",
+    "j72", "j217", "j120", "j517", "j522", "j523",
+    # Mac codenames — MacBook Pro
+    "j137", "j680", "j152", "j314", "j316", "j414", "j416",
+    "j493", "j503", "j504", "j505",
+    # Mac codenames — MacBook Air
+    "j413", "j415", "j513", "j614", "j615",
+    # Mac codenames — iMac / Mac Mini / Mac Studio / Mac Pro
+    "j185", "j273", "j274", "j375", "j473", "j474",
+    "j180", "j375c", "j474s",
     # Apple Watch SoCs
-    "s4", "s5", "s6", "s7", "s8", "s9", "t8301", "t8302",
+    "t8301", "t8302",
+    # MLB / chip identifiers often in filenames
+    "mlb", "emc",
 ]
 
+# Regex patterns for Apple model numbers (A1xxx, A2xxx, A3xxx) and EMC numbers
+# Use (?<![a-z0-9]) / (?![a-z0-9]) instead of \b because \b treats _ as word char
+APPLE_PATTERNS = re.compile(
+    r"(?<![a-z0-9])a[123]\d{3}(?![a-z0-9])"    # A1278, A2141, A3113 etc.
+    r"|(?<![a-z0-9])emc\s*\d{4}(?![a-z0-9])"   # EMC 2835, EMC3178 etc.
+    r"|(?<![a-z0-9])(?:n61|n71|d10|d20|d22|d16|d63|d73|d83|d93)(?![a-z0-9])",  # short iPhone codenames
+    re.IGNORECASE,
+)
+
 ALLOWED_EXTENSIONS = {
-    ".pdf", ".zip", ".rar", ".7z", ".brd", ".bvr", ".bdv",
-    ".cad", ".fz", ".asc", ".tvw", ".pcb",
+    # Schematics
+    ".pdf",
+    # Archives (may contain boardview + schematic bundles)
+    ".zip", ".rar", ".7z",
+    # OpenBoardView / boardview formats
+    ".brd", ".bvr", ".bdv", ".bv", ".cad", ".fz", ".asc",
+    ".tvw", ".pcb", ".ddb", ".cst", ".f2b", ".gr",
+    # BIOS / firmware
+    ".bin", ".rom",
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -87,7 +119,9 @@ def save_state(state: dict):
 
 def is_apple(filename: str, caption: str) -> bool:
     text = f"{filename} {caption}".lower()
-    return any(kw in text for kw in APPLE_KEYWORDS)
+    if any(kw in text for kw in APPLE_KEYWORDS):
+        return True
+    return bool(APPLE_PATTERNS.search(text))
 
 
 def get_filename(message) -> str | None:
@@ -107,6 +141,9 @@ def has_allowed_ext(filename: str) -> bool:
 
 
 # ── Core ───────────────────────────────────────────────────────────────────────
+
+APPLE_ONLY_CHANNELS = set(CHANNELS["apple"])
+
 
 async def process_channel(
     client: TelegramClient,
@@ -149,8 +186,10 @@ async def process_channel(
             skipped += 1
             continue
 
-        if apple_only and not is_apple(filename, caption):
-            continue
+        # Apple-only channels: download everything, no keyword filter needed
+        if apple_only and channel not in APPLE_ONLY_CHANNELS:
+            if not is_apple(filename, caption):
+                continue
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()
@@ -196,19 +235,25 @@ async def main(args):
         print("\nMobile channels:")
         for c in CHANNELS["mobile"]:
             print(f"  @{c}")
+        print("\nApple-specific channels:")
+        for c in CHANNELS["apple"]:
+            print(f"  @{c}")
         print("\nApple keywords:")
         print("  " + ", ".join(APPLE_KEYWORDS))
+        print("\nAllowed extensions:")
+        print("  " + ", ".join(sorted(ALLOWED_EXTENSIONS)))
         return
 
     state = load_state() if args.resume else {"downloaded": {}}
 
     channels = []
+    all_channels = CHANNELS["laptop"] + CHANNELS["mobile"] + CHANNELS["apple"]
     if args.apple:
-        channels = CHANNELS["laptop"] + CHANNELS["mobile"]
+        channels = all_channels
     elif args.channels:
         channels = [c.lstrip("@") for c in args.channels]
     else:
-        channels = CHANNELS["laptop"] + CHANNELS["mobile"]
+        channels = all_channels
 
     keyword_filter = args.filter if args.filter else None
     apple_only = args.apple

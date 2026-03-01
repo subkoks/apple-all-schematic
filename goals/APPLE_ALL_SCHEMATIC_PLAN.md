@@ -92,12 +92,16 @@ python tg_schematic_downloader.py --list-channels
 
 ### Laptop / Desktop (MacBook, iMac, Mac Mini)
 
-| Channel                 | Description                                             |
-| ----------------------- | ------------------------------------------------------- |
-| `@schematicslaptop`     | Largest archive — 10,000+ posts, PDF + boardview files  |
-| `@biosarchive`          | Same admin, BIOS + schematics, Apple Mac Mini confirmed |
-| `@BIOSARCHIVE_PHOTOS`   | Companion channel, occasional file attachments          |
-| `@freeschematicdiagram` | Mixed laptops + phones                                  |
+| Channel                  | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `@schematicslaptop`      | Largest archive — 10,000+ posts, PDF + boardview files  |
+| `@biosarchive`           | Same admin, BIOS + schematics, Apple Mac Mini confirmed |
+| `@BIOSARCHIVE_PHOTOS`    | Companion channel, occasional file attachments          |
+| `@freeschematicdiagram`  | Mixed laptops + phones                                  |
+| `@notebookschematic`     | Laptop schematics archive, 3.6K subscribers             |
+| `@laptop_bios_schematic` | BIOS + schematic + boardview for laptops, 3.6K subs     |
+| `@alischematics`         | "Ocean of Schematic & Boardview", 3.4K subscribers      |
+| `@hrtechno`              | All laptop/desktop BIOS & schematics                    |
 
 ### Phone / Mobile (iPhone, iPad, Apple Watch)
 
@@ -107,20 +111,29 @@ python tg_schematic_downloader.py --list-channels
 | `@mobileshematic`         | Mobile schematics archive                         |
 | `@schematicmobile`        | Mixed mobile schematic files                      |
 
+### Apple-Specific
+
+| Channel                 | Description                                            |
+| ----------------------- | ------------------------------------------------------ |
+| `@Mac_Shematic_Santale` | Mac-only schematics + boardview, 7.3K subs, 279 files |
+
 ---
 
 ## What Gets Downloaded
 
 ### File types
 
-`.pdf` `.zip` `.rar` `.7z` `.brd` `.bvr` `.bdv` `.cad` `.fz` `.asc` `.tvw` `.pcb`
+**Schematics:** `.pdf`
+**Archives:** `.zip` `.rar` `.7z`
+**Boardview (OpenBoardView):** `.brd` `.bvr` `.bdv` `.bv` `.cad` `.fz` `.asc` `.tvw` `.pcb` `.ddb` `.cst` `.f2b` `.gr`
+**Firmware:** `.bin` `.rom`
 
 ### Apple keyword filter (`--apple` flag)
 
 Matches filenames **and** message captions against:
 
 - **Product names:** `iphone`, `ipad`, `macbook`, `imac`, `mac mini`, `mac pro`, `mac studio`, `apple watch`, `airpods`, `apple tv`, `homepod`, `ipod`
-- **Board number prefixes:** `820-0`, `051-` (Apple's internal doc numbering)
+- **Board number prefixes:** `820-`, `051-` (Apple's internal board/doc numbering)
 - **iPhone codenames:** `n61` (6), `n71` (6S), `d10` (7), `d20` (8), `d22` (X), `n841` (XR), `d321` (XS), `d421` (11), `d52g` (12), `d16` (13), `d63` (14), `d73` (15), `d83` (16)
 - **iPad codenames:** `j72`, `j217`, `j120`
 - **Mac codenames:** `j137`, `j680`, `j152`, `j314`, `j316`
