@@ -12,6 +12,14 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 
+from validation import (
+    ValidationError,
+    sanitize_filename,
+    validate_channel_names,
+    validate_extensions,
+    validate_keywords,
+)
+
 # Force unbuffered output for real-time logging
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
@@ -88,7 +96,7 @@ APPLE_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
-ALLOWED_EXTENSIONS = {
+ALLOWED_EXTENSIONS = validate_extensions({
     # Schematics
     ".pdf",
     # Archives (may contain boardview + schematic bundles)
@@ -98,6 +106,13 @@ ALLOWED_EXTENSIONS = {
     ".tvw", ".pcb", ".ddb", ".cst", ".f2b", ".gr",
     # BIOS / firmware
     ".bin", ".rom",
+})
+
+# Validate the hardcoded channel list at import time so typos (e.g. a stray
+# path separator or empty string) fail loudly rather than poisoning a run.
+CHANNELS = {
+    category: validate_channel_names(names)
+    for category, names in CHANNELS.items()
 }
 
 # ── State ──────────────────────────────────────────────────────────────────────
@@ -128,12 +143,18 @@ def get_filename(message) -> str | None:
     if not isinstance(message.media, MessageMediaDocument):
         return None
     doc = message.media.document
+    raw_name: str | None = None
     for attr in doc.attributes:
         if hasattr(attr, "file_name") and attr.file_name:
-            return attr.file_name
-    # Fallback: use doc id + mime type guess
-    ext = doc.mime_type.split("/")[-1] if doc.mime_type else "bin"
-    return f"file_{doc.id}.{ext}"
+            raw_name = attr.file_name
+            break
+    if raw_name is None:
+        # Fallback: use doc id + mime type guess. Sanitise the mime subtype
+        # since it also comes from the remote server.
+        mime_subtype = (doc.mime_type or "bin").split("/")[-1]
+        mime_subtype = re.sub(r"[^A-Za-z0-9]", "", mime_subtype) or "bin"
+        raw_name = f"file_{doc.id}.{mime_subtype}"
+    return sanitize_filename(raw_name)
 
 
 def has_allowed_ext(filename: str) -> bool:
@@ -251,11 +272,22 @@ async def main(args):
     if args.apple:
         channels = all_channels
     elif args.channels:
-        channels = [c.lstrip("@") for c in args.channels]
+        try:
+            channels = validate_channel_names(args.channels)
+        except ValidationError as e:
+            print(f"Invalid --channels value: {e}")
+            sys.exit(2)
     else:
         channels = all_channels
 
-    keyword_filter = args.filter if args.filter else None
+    if args.filter:
+        try:
+            keyword_filter = validate_keywords(args.filter)
+        except ValidationError as e:
+            print(f"Invalid --filter value: {e}")
+            sys.exit(2)
+    else:
+        keyword_filter = None
     apple_only = args.apple
 
     async with TelegramClient(str(SESSION_FILE), int(api_id), api_hash) as client:
