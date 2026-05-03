@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure
+    url: https://github.com/subkoks/apple-all-schematic/security/advisories/new
+    about: Privately report a security issue (do not open a public issue).
+  - name: Question / discussion
+    url: https://github.com/subkoks/apple-all-schematic/issues
+    about: Open a normal issue with the `question` label until Discussions is enabled.
