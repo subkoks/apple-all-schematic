@@ -1,0 +1,43 @@
+name: Bug report
+description: Report something that isn't behaving as expected
+title: "bug: <short summary>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in what you can.
+        Do **not** include real Telegram session data, API hashes, or downloaded
+        copyrighted material in this issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug. Include exact commands and console output.
+      placeholder: "When I run X, I expected Y, but Z happened."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `python -m src ...`
+        2. Observe `...`
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      placeholder: "e.g. commit abcd123"
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "OS, Python version, Telethon version"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / context
+      render: shell
