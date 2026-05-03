@@ -1,7 +1,5 @@
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
 updates:
-  # Python dependencies (requirements.txt)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -18,28 +16,6 @@ updates:
       include: "scope"
     groups:
       python-minor-patch:
-        applies-to: version-updates
-        update-types:
-          - "minor"
-          - "patch"
-
-  # GitHub Actions (kept ready even though no workflows exist yet)
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "github-actions"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    groups:
-      actions-minor-patch:
         applies-to: version-updates
         update-types:
           - "minor"
