@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "apple-all-schematic"
+version = "1.0.0"
+description = "Bulk download Apple schematics and boardview files from Telegram channels"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "telethon>=1.42.0,<2",
+    "tqdm>=4.67,<5",
+    "python-dotenv>=1.2,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.25",
+    "ruff>=0.15",
+]
+
+[project.urls]
+Repository = "https://github.com/subkoks/apple-all-schematic"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

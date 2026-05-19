@@ -1,0 +1,55 @@
+{
+  "channels": {
+    "laptop": [
+      "schematicslaptop",
+      "biosarchive",
+      "BIOSARCHIVE_PHOTOS",
+      "freeschematicdiagram",
+      "notebookschematic",
+      "laptop_bios_schematic",
+      "alischematics",
+      "hrtechno"
+    ],
+    "mobile": [
+      "SMART_PHONE_SCHEMATICS",
+      "mobileshematic",
+      "schematicmobile"
+    ],
+    "apple": [
+      "Mac_Shematic_Santale"
+    ]
+  },
+  "apple_keywords": [
+    "iphone", "ipad", "macbook", "imac", "mac mini", "mac pro",
+    "mac studio", "apple watch", "airpods", "apple tv", "homepod", "ipod",
+    "apple",
+    "820-", "051-",
+    "n841", "d321", "d421", "d52g",
+    "j72", "j217", "j120", "j517", "j522", "j523",
+    "j137", "j680", "j152", "j314", "j316", "j414", "j416",
+    "j493", "j503", "j504", "j505",
+    "j413", "j415", "j513", "j614", "j615",
+    "j185", "j273", "j274", "j375", "j473", "j474",
+    "j180", "j375c", "j474s",
+    "t8301", "t8302",
+    "mlb", "emc"
+  ],
+  "apple_regex_patterns": [
+    "(?<![a-z0-9])a[123]\\d{3}(?![a-z0-9])",
+    "(?<![a-z0-9])emc\\s*\\d{4}(?![a-z0-9])",
+    "(?<![a-z0-9])(?:n61|n71|d10|d20|d22|d16|d63|d73|d83|d93)(?![a-z0-9])"
+  ],
+  "allowed_extensions": [
+    ".pdf",
+    ".zip", ".rar", ".7z",
+    ".brd", ".bvr", ".bdv", ".bv", ".cad", ".fz", ".asc",
+    ".tvw", ".pcb", ".ddb", ".cst", ".f2b", ".gr",
+    ".bin", ".rom"
+  ],
+  "download": {
+    "max_retries": 3,
+    "retry_base_delay_seconds": 2,
+    "parallel_channels": 3,
+    "state_save_interval": 1
+  }
+}
