@@ -1,0 +1,50 @@
+name: PR Check
+
+# Minimal pull_request gate so branch protection has a status check to require
+# (which is what lets auto-merge wait for "green"). Lenient by design: it only
+# fails on real breakage (syntax errors), never on style, and passes cleanly on
+# repos with no code.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  sanity:
+    name: sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Python syntax
+        run: |
+          mapfile -d '' -t pyf < <(find . -path ./.git -prune -o -name '*.py' -print0)
+          if [ "${#pyf[@]}" -gt 0 ]; then
+            python -m py_compile "${pyf[@]}"
+            echo "checked ${#pyf[@]} Python file(s)"
+          else
+            echo "no Python files"
+          fi
+      - name: Shell syntax
+        run: |
+          mapfile -d '' -t shf < <(find . -path ./.git -prune -o -name '*.sh' -print0)
+          if [ "${#shf[@]}" -gt 0 ]; then
+            for f in "${shf[@]}"; do bash -n "$f"; done
+            echo "checked ${#shf[@]} shell file(s)"
+          else
+            echo "no shell files"
+          fi
+      - name: JSON validity
+        run: |
+          mapfile -d '' -t jf < <(find . -path ./.git -prune -o -name '*.json' -print0)
+          if [ "${#jf[@]}" -gt 0 ]; then
+            for f in "${jf[@]}"; do python -m json.tool "$f" >/dev/null && echo "ok: $f"; done
+          else
+            echo "no JSON files"
+          fi
