@@ -1,3 +1,27 @@
-telethon
-tqdm
-python-dotenv
+# Locked runtime dependencies — DO NOT edit by hand.
+# Regenerate: uv pip compile pyproject.toml --generate-hashes -o requirements.txt
+# Source of truth for version ranges: pyproject.toml [project.dependencies]
+
+pyaes==1.6.1 \
+    --hash=sha256:02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f
+    # via telethon
+pyasn1==0.6.3 \
+    --hash=sha256:697a8ecd6d98891189184ca1fa05d1bb00e2f84b5977c481452050549c8a72cf \
+    --hash=sha256:a80184d120f0864a52a073acc6fc642847d0be408e7c7252f31390c0f4eadcde
+    # via rsa
+python-dotenv==1.2.2 \
+    --hash=sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a \
+    --hash=sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3
+    # via apple-all-schematic (pyproject.toml)
+rsa==4.9.1 \
+    --hash=sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762 \
+    --hash=sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75
+    # via telethon
+telethon==1.43.2 \
+    --hash=sha256:794912eb546eacfe351ca7bf097b029f963da95985a07490653a99bf98219957 \
+    --hash=sha256:7e8a23a08f8474f3ac0c46847f3edd4e965b4452de0ba868b089acbad8041aa4
+    # via apple-all-schematic (pyproject.toml)
+tqdm==4.68.1 \
+    --hash=sha256:fc163d96b287bd031e1aa24421ce4411b25559bd0a1be4fe649bdaa4d2c02bf5 \
+    --hash=sha256:fea4a90e4023f764914569f7802a297277c5ab1a66be5144143e142e1a4031d8
+    # via apple-all-schematic (pyproject.toml)
