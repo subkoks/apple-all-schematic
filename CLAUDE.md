@@ -81,3 +81,6 @@
 - Add file integrity checks (size validation after download)
 - Add retry logic for failed downloads with exponential backoff
 - Consider parallel downloads across channels (async tasks)
+## Cloud sessions (Claude Code on the web)
+
+This repo is cloud-ready. A `SessionStart` hook (`.claude/settings.json` -> `scripts/cloud-setup.sh`) bootstraps dependencies automatically in Anthropic cloud sessions (`claude --remote`, `claude.ai/code`). It is cloud-guarded (`CLAUDE_CODE_REMOTE=true`) and a no-op in local sessions.
