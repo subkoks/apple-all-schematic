@@ -186,4 +186,4 @@ For comprehensive project planning, instructions, and supplementary sources, see
 
 ## License
 
-Educational use only. Respect intellectual property rights and use responsibly.
+MIT — see [LICENSE](LICENSE). This tool is intended for educational and device-repair use; respect intellectual property rights and use responsibly.
