@@ -11,20 +11,26 @@ Download comprehensive Apple product schematics and boardviews (iPhone, iPad, Ma
 ```text
 apple-all-schematic/
 ├── README.md              # This file
-├── .env.example          # Environment variables template
-├── requirements.txt      # Python dependencies
-├── goals/                # Workflow definitions (markdown)
+├── .env.example           # Environment variables template
+├── pyproject.toml         # Project metadata and tooling config
+├── requirements.txt       # Python dependencies
+├── goals/                 # Workflow definitions (markdown)
 │   └── APPLE_ALL_SCHEMATIC_PLAN.md
-├── tools/                # Deterministic scripts
-├── context/              # Domain knowledge, references
-├── args/                 # Config files (yaml/json)
-├── data/                 # Databases, generated data
-│   ├── downloads/        # Downloaded files (organized by channel)
-│   ├── state.json        # Resume state (auto-generated)
-│   └── tg_scraper_session.session  # Telegram session (auto-generated)
-├── .tmp/                 # Scratch work (disposable)
-└── src/                  # Application source code
-    └── tg_schematic_downloader.py
+├── docs/                  # Project documentation
+│   └── architecture.md
+├── scripts/               # Deterministic scripts
+│   └── cloud-setup.sh
+├── context/               # Domain knowledge, references
+├── args/                  # Config files (yaml/json)
+├── src/                   # Application source code
+│   ├── tg_schematic_downloader.py
+│   ├── organize_downloads.py
+│   └── validation.py
+├── tests/                 # Test suite (pytest)
+└── data/                  # Generated at runtime (gitignored)
+    ├── downloads/         # Downloaded files (organized by channel)
+    ├── state.json         # Resume state (auto-generated)
+    └── tg_scraper_session.session  # Telegram session (auto-generated)
 ```
 
 ## Quick Start
