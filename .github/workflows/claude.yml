@@ -1,14 +1,22 @@
-# Interactive Claude on GitHub: mention @claude in an issue, PR, or review thread.
+# Claude Code GitHub Actions workflow
 #
-# Auth: CLAUDE_CODE_OAUTH_TOKEN (repository secret) — uses a Claude Pro/Max
-# subscription instead of pay-as-you-go API credit. Generate it locally with
-# `claude setup-token`, then: `gh secret set CLAUDE_CODE_OAUTH_TOKEN`.
-# Setup:    https://github.com/anthropics/claude-code-action/blob/main/docs/setup.md
-# Security: https://github.com/anthropics/claude-code-action/blob/main/docs/security.md
+# Two trigger modes:
+#   1. AUTO — fires on every PR open/update → Claude auto-reviews the diff
+#   2. MANUAL — mention @claude anywhere in an issue/PR/review to invoke the agent
+#
+# Auth: CLAUDE_CODE_OAUTH_TOKEN (repository secret) — uses Claude Pro/Max subscription.
+# Generate:  `claude setup-token`, then `gh secret set CLAUDE_CODE_OAUTH_TOKEN`
+# Setup:     https://github.com/anthropics/claude-code-action/blob/main/docs/setup.md
+# Security:  https://github.com/anthropics/claude-code-action/blob/main/docs/security.md
 
 name: Claude Code
 
 on:
+  # AUTO: review every PR diff as soon as it's opened or updated
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+  # MANUAL: @claude mention in issues, PRs, review threads
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -19,35 +27,67 @@ on:
     types: [submitted]
 
 jobs:
-  claude:
-    # Author gate: only the repo owner/members/collaborators can trigger the
-    # agent. '@claude' is a string match, not an identity check — without this
-    # guard any external user could invoke a write-capable agent by commenting.
+  # ─── AUTO review on every PR ───────────────────────────────────────────────
+  claude-pr-review:
+    name: Auto PR Review
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 1
+
+      - name: Claude auto-review
+        uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Prompt sent automatically on every PR — no @claude mention needed
+          prompt: |
+            Review this pull request. Check for:
+            - Bugs, logic errors, or broken functionality
+            - Security issues (secrets, injections, unsafe inputs)
+            - Style/convention inconsistencies vs CLAUDE.md
+            - Broken or invalid URLs in README changes
+            Post inline comments on specific lines where issues exist.
+            If the PR looks clean, leave a short approving summary comment.
+          claude_args: |
+            --max-turns 30
+          plugin_marketplaces: |
+            https://github.com/anthropics/claude-plugins-official.git
+          plugins: |
+            code-review@claude-plugins-official
+
+  # ─── MANUAL: respond to @claude mentions ───────────────────────────────────
+  claude-interactive:
+    name: Interactive (@claude)
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
     runs-on: ubuntu-latest
-    # id-token: write is required even though auth is the OAuth token: the
-    # claude-code-action fetches a GitHub OIDC token at startup and fails
-    # (ACTIONS_ID_TOKEN_REQUEST_URL missing) without this permission.
     permissions:
       contents: write
       pull-requests: write
       issues: write
       actions: read
       id-token: write
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@fbda2eb1bdc90d319b8d853f5deb53bca199a7c1 # v1
+        uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
