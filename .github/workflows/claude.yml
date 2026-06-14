@@ -44,10 +44,31 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Validate & normalize Claude token
+        env:
+          RAW_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          # A wrapped copy/paste embeds a newline in the secret -> the action sends
+          # an invalid auth header ("Header has invalid value: '***\n ***'"). Strip
+          # all whitespace to heal it, then sanity-check the shape and fail loudly
+          # if the secret is missing or clearly wrong.
+          TOKEN="$(printf '%s' "$RAW_TOKEN" | tr -d '[:space:]')"
+          if [ -z "$TOKEN" ]; then
+            echo "::error::CLAUDE_CODE_OAUTH_TOKEN secret is not set. Run 'claude setup-token' then 'gh secret set CLAUDE_CODE_OAUTH_TOKEN'."
+            exit 1
+          fi
+          case "$TOKEN" in
+            sk-ant-oat*) : ;;
+            *) echo "::error::CLAUDE_CODE_OAUTH_TOKEN is malformed (expected to start with sk-ant-oat). Re-copy from 'claude setup-token' output."; exit 1 ;;
+          esac
+          echo "::add-mask::$TOKEN"
+          printf 'CLAUDE_OAUTH=%s\n' "$TOKEN" >> "$GITHUB_ENV"
+          echo "Claude token shape OK (length ${#TOKEN})."
+
       - name: Claude auto-review
         uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_code_oauth_token: ${{ env.CLAUDE_OAUTH }}
           # Prompt sent automatically on every PR — no @claude mention needed
           prompt: |
             Review this pull request. Check for:
@@ -85,11 +106,32 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Validate & normalize Claude token
+        env:
+          RAW_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          # A wrapped copy/paste embeds a newline in the secret -> the action sends
+          # an invalid auth header ("Header has invalid value: '***\n ***'"). Strip
+          # all whitespace to heal it, then sanity-check the shape and fail loudly
+          # if the secret is missing or clearly wrong.
+          TOKEN="$(printf '%s' "$RAW_TOKEN" | tr -d '[:space:]')"
+          if [ -z "$TOKEN" ]; then
+            echo "::error::CLAUDE_CODE_OAUTH_TOKEN secret is not set. Run 'claude setup-token' then 'gh secret set CLAUDE_CODE_OAUTH_TOKEN'."
+            exit 1
+          fi
+          case "$TOKEN" in
+            sk-ant-oat*) : ;;
+            *) echo "::error::CLAUDE_CODE_OAUTH_TOKEN is malformed (expected to start with sk-ant-oat). Re-copy from 'claude setup-token' output."; exit 1 ;;
+          esac
+          echo "::add-mask::$TOKEN"
+          printf 'CLAUDE_OAUTH=%s\n' "$TOKEN" >> "$GITHUB_ENV"
+          echo "Claude token shape OK (length ${#TOKEN})."
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_code_oauth_token: ${{ env.CLAUDE_OAUTH }}
           claude_args: |
             --max-turns 15
           plugin_marketplaces: |
