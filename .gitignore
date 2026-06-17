@@ -23,3 +23,7 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+
+# Claude Code (commit shared settings; ignore machine-local perms + transcripts)
+.claude/*
+!.claude/settings.json
