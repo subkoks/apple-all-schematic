@@ -9,7 +9,10 @@ import sys
 import json
 import asyncio
 import argparse
+import contextlib
 from pathlib import Path
+from collections.abc import Callable
+
 from dotenv import load_dotenv
 
 from validation import (
@@ -20,9 +23,11 @@ from validation import (
     validate_keywords,
 )
 
-# Force unbuffered output for real-time logging
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
+# Force unbuffered output for real-time logging. Guard against a windowed
+# (GUI / PyInstaller --windowed) launch where stdout/stderr may be None.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(line_buffering=True)
 
 load_dotenv()
 
@@ -64,58 +69,113 @@ CHANNELS = {
 
 APPLE_KEYWORDS = [
     # Product names
-    "iphone", "ipad", "macbook", "imac", "mac mini", "mac pro",
-    "mac studio", "apple watch", "airpods", "apple tv", "homepod", "ipod",
+    "iphone",
+    "ipad",
+    "macbook",
+    "imac",
+    "mac mini",
+    "mac pro",
+    "mac studio",
+    "apple watch",
+    "airpods",
+    "apple tv",
+    "homepod",
+    "ipod",
     "apple",
     # Board numbers (820-xxxx covers all Apple logic boards)
-    "820-", "051-",
+    "820-",
+    "051-",
     # iPhone codenames (longer ones safe as substrings, short ones via regex)
-    "n841", "d321", "d421", "d52g",
+    "n841",
+    "d321",
+    "d421",
+    "d52g",
     # iPad codenames
-    "j72", "j217", "j120", "j517", "j522", "j523",
+    "j72",
+    "j217",
+    "j120",
+    "j517",
+    "j522",
+    "j523",
     # Mac codenames — MacBook Pro
-    "j137", "j680", "j152", "j314", "j316", "j414", "j416",
-    "j493", "j503", "j504", "j505",
+    "j137",
+    "j680",
+    "j152",
+    "j314",
+    "j316",
+    "j414",
+    "j416",
+    "j493",
+    "j503",
+    "j504",
+    "j505",
     # Mac codenames — MacBook Air
-    "j413", "j415", "j513", "j614", "j615",
+    "j413",
+    "j415",
+    "j513",
+    "j614",
+    "j615",
     # Mac codenames — iMac / Mac Mini / Mac Studio / Mac Pro
-    "j185", "j273", "j274", "j375", "j473", "j474",
-    "j180", "j375c", "j474s",
+    "j185",
+    "j273",
+    "j274",
+    "j375",
+    "j473",
+    "j474",
+    "j180",
+    "j375c",
+    "j474s",
     # Apple Watch SoCs
-    "t8301", "t8302",
+    "t8301",
+    "t8302",
     # MLB / chip identifiers often in filenames
-    "mlb", "emc",
+    "mlb",
+    "emc",
 ]
 
 # Regex patterns for Apple model numbers (A1xxx, A2xxx, A3xxx) and EMC numbers
 # Use (?<![a-z0-9]) / (?![a-z0-9]) instead of \b because \b treats _ as word char
 APPLE_PATTERNS = re.compile(
-    r"(?<![a-z0-9])a[123]\d{3}(?![a-z0-9])"    # A1278, A2141, A3113 etc.
-    r"|(?<![a-z0-9])emc\s*\d{4}(?![a-z0-9])"   # EMC 2835, EMC3178 etc.
+    r"(?<![a-z0-9])a[123]\d{3}(?![a-z0-9])"  # A1278, A2141, A3113 etc.
+    r"|(?<![a-z0-9])emc\s*\d{4}(?![a-z0-9])"  # EMC 2835, EMC3178 etc.
     r"|(?<![a-z0-9])(?:n61|n71|d10|d20|d22|d16|d63|d73|d83|d93)(?![a-z0-9])",  # short iPhone codenames
     re.IGNORECASE,
 )
 
-ALLOWED_EXTENSIONS = validate_extensions({
-    # Schematics
-    ".pdf",
-    # Archives (may contain boardview + schematic bundles)
-    ".zip", ".rar", ".7z",
-    # OpenBoardView / boardview formats
-    ".brd", ".bvr", ".bdv", ".bv", ".cad", ".fz", ".asc",
-    ".tvw", ".pcb", ".ddb", ".cst", ".f2b", ".gr",
-    # BIOS / firmware
-    ".bin", ".rom",
-})
+ALLOWED_EXTENSIONS = validate_extensions(
+    {
+        # Schematics
+        ".pdf",
+        # Archives (may contain boardview + schematic bundles)
+        ".zip",
+        ".rar",
+        ".7z",
+        # OpenBoardView / boardview formats
+        ".brd",
+        ".bvr",
+        ".bdv",
+        ".bv",
+        ".cad",
+        ".fz",
+        ".asc",
+        ".tvw",
+        ".pcb",
+        ".ddb",
+        ".cst",
+        ".f2b",
+        ".gr",
+        # BIOS / firmware
+        ".bin",
+        ".rom",
+    }
+)
 
 # Validate the hardcoded channel list at import time so typos (e.g. a stray
 # path separator or empty string) fail loudly rather than poisoning a run.
-CHANNELS = {
-    category: validate_channel_names(names)
-    for category, names in CHANNELS.items()
-}
+CHANNELS = {category: validate_channel_names(names) for category, names in CHANNELS.items()}
 
 # ── State ──────────────────────────────────────────────────────────────────────
+
 
 def load_state() -> dict:
     if STATE_FILE.exists():
@@ -131,6 +191,7 @@ def save_state(state: dict):
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def is_apple(filename: str, caption: str) -> bool:
     text = f"{filename} {caption}".lower()
@@ -174,9 +235,19 @@ async def process_channel(
     keyword_filter: list[str] | None,
     limit: int | None,
     resume: bool,
+    progress: Callable[[dict], None] | None = None,
 ):
-    print(f"\n{'─'*60}")
+    # Optional structured-event sink for GUI/embedding. When None, behaviour is
+    # identical to the CLI (print-only). Sink errors never leak into the loop.
+    def emit(event: dict):
+        if progress is None:
+            return
+        with contextlib.suppress(Exception):
+            progress(event)
+
+    print(f"\n{'─' * 60}")
     print(f"Channel: @{channel}")
+    emit({"type": "channel_start", "channel": channel})
 
     out_dir = DOWNLOAD_DIR / channel
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -188,6 +259,7 @@ async def process_channel(
         entity = await client.get_entity(channel)
     except Exception as e:
         print(f"  ✗ Could not resolve @{channel}: {e}")
+        emit({"type": "resolve_error", "channel": channel, "error": str(e)})
         return
 
     kwargs = {"limit": limit} if limit else {}
@@ -227,18 +299,61 @@ async def process_channel(
 
         try:
             print(f"  ↓ {filename}")
+            emit({"type": "file_start", "channel": channel, "filename": filename})
+
+            byte_cb = None
+            if progress is not None:
+
+                def byte_cb(received, total, _fn=filename):
+                    emit(
+                        {
+                            "type": "file_bytes",
+                            "channel": channel,
+                            "filename": _fn,
+                            "received": received,
+                            "total": total,
+                        }
+                    )
+
             await client.download_media(
                 message,
                 file=str(dest),
+                progress_callback=byte_cb,
             )
             downloaded[state_key] = str(dest)
             count += 1
             save_state(state)
+            emit(
+                {
+                    "type": "file_done",
+                    "channel": channel,
+                    "filename": filename,
+                    "path": str(dest),
+                    "count": count,
+                }
+            )
         except Exception as e:
             print(f"  ✗ Failed {filename}: {e}")
             errors += 1
+            emit(
+                {
+                    "type": "file_error",
+                    "channel": channel,
+                    "filename": filename,
+                    "error": str(e),
+                }
+            )
 
     print(f"  Done — {count} downloaded, {skipped} skipped, {errors} errors")
+    emit(
+        {
+            "type": "channel_done",
+            "channel": channel,
+            "count": count,
+            "skipped": skipped,
+            "errors": errors,
+        }
+    )
 
 
 async def main(args):
@@ -307,14 +422,30 @@ async def main(args):
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
+
 def parse_args():
     p = argparse.ArgumentParser(description="Telegram Apple schematic downloader")
-    p.add_argument("--apple", action="store_true", help="Download all Apple files (uses keyword filter)")
+    p.add_argument(
+        "--apple", action="store_true", help="Download all Apple files (uses keyword filter)"
+    )
     p.add_argument("--resume", action="store_true", help="Skip already-downloaded files")
-    p.add_argument("--limit", type=int, default=None, metavar="N", help="Max messages to scan per channel")
-    p.add_argument("--filter", nargs="+", metavar="KW", help="Only download files matching these keywords")
-    p.add_argument("--channels", nargs="+", metavar="CH", help="Specific channels to scrape (overrides default list)")
-    p.add_argument("--list-channels", action="store_true", help="Print available channels and keywords, then exit")
+    p.add_argument(
+        "--limit", type=int, default=None, metavar="N", help="Max messages to scan per channel"
+    )
+    p.add_argument(
+        "--filter", nargs="+", metavar="KW", help="Only download files matching these keywords"
+    )
+    p.add_argument(
+        "--channels",
+        nargs="+",
+        metavar="CH",
+        help="Specific channels to scrape (overrides default list)",
+    )
+    p.add_argument(
+        "--list-channels",
+        action="store_true",
+        help="Print available channels and keywords, then exit",
+    )
     return p.parse_args()
 
 

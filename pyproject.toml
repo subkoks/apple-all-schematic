@@ -20,6 +20,10 @@ dev = [
     "pytest-asyncio>=0.25",
     "ruff>=0.15",
 ]
+gui = [
+    "PySide6>=6.7,<7",
+    "qasync>=0.27",
+]
 
 [project.urls]
 Repository = "https://github.com/subkoks/apple-all-schematic"
