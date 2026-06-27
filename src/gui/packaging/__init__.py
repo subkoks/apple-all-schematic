@@ -1,0 +1,1 @@
+"""Packaging assets (dmgbuild settings)."""

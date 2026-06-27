@@ -1,7 +1,9 @@
 """Application entry point.
 
-Sets up a single qasync event loop shared by Qt and Telethon's asyncio, loads the
-dark theme, and shows the main window. Run with::
+Boot order matters: QApplication and its applicationName must exist before we read
+QStandardPaths (settings/data dirs), and the data-root override must run before the
+window touches any path. So: app -> settings -> paths.apply -> theme -> window, all on a
+single qasync event loop shared by Qt and Telethon.
 
     PYTHONPATH=src python -m gui.app
 """
@@ -12,35 +14,41 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Ensure the project's ``src`` directory is importable so the GUI can reuse the
-# existing CLI modules (tg_schematic_downloader, organize_downloads, validation)
-# whether launched via ``-m gui.app`` or from a frozen bundle.
+# Make the project's ``src`` importable so the GUI can reuse the CLI modules whether
+# launched via ``-m gui.app`` or from a frozen bundle.
 _SRC = Path(__file__).resolve().parent.parent
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 import qasync  # noqa: E402
+from PySide6.QtGui import QFontDatabase  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
+from gui.core import paths  # noqa: E402
+from gui.core.settings import APP_NAME, Settings  # noqa: E402
 from gui.ui.main_window import MainWindow  # noqa: E402
-
-THEME_FILE = Path(__file__).resolve().parent / "ui" / "theme.qss"
-
-
-def _load_theme(app: QApplication) -> None:
-    if THEME_FILE.exists():
-        app.setStyleSheet(THEME_FILE.read_text())
+from gui.ui.theme import ThemeManager  # noqa: E402
 
 
 def main() -> None:
     app = QApplication(sys.argv)
-    app.setApplicationName("Apple Schematic Downloader")
-    _load_theme(app)
+    app.setApplicationName(APP_NAME)
+    app.setApplicationDisplayName(APP_NAME)
+    app.setOrganizationName("subkoks")
+
+    # Use the real OS UI font (avoids a missing -apple-system family lookup).
+    app.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont))
+
+    settings = Settings.load()
+    paths.apply(settings)
+
+    theme = ThemeManager(app, settings.theme)
+    theme.apply()
 
     loop = qasync.QEventLoop(app)
     asyncio.set_event_loop(loop)
 
-    window = MainWindow()
+    window = MainWindow(settings=settings, theme=theme)
     window.show()
 
     with loop:

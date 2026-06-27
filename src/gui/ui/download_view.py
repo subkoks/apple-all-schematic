@@ -1,35 +1,44 @@
-"""Download tab: channel selection, filters, run controls, live progress + log."""
+"""Download tab: channel selection (+add/remove), filters, location bar, live progress."""
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMenu,
+    QMessageBox,
     QPlainTextEdit,
     QPushButton,
     QRadioButton,
     QScrollArea,
     QSpinBox,
+    QToolButton,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
-from ..core.config import AppConfig
+from ..core import paths
+from ..core.config import AppConfig, load_config
+from ..core.settings import Settings
+from .channel_dialog import AddChannelDialog
 from .widgets import Card, ChannelProgress, StatChip
 
 
 class DownloadView(QWidget):
-    """Emits intent via callbacks set by MainWindow; renders live progress."""
-
-    def __init__(self, config: AppConfig, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, config: AppConfig, settings: Settings, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self.config = config
+        self.settings = settings
         self._rows: dict[str, ChannelProgress] = {}
 
         root = QHBoxLayout(self)
@@ -42,30 +51,30 @@ class DownloadView(QWidget):
 
     def _build_left(self) -> QWidget:
         col = QWidget()
-        col.setFixedWidth(320)
+        col.setFixedWidth(330)
         layout = QVBoxLayout(col)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
 
-        # Channels card
+        # Channels card with an Add button in the header.
         channels_card = Card("Channels")
+        header = QHBoxLayout()
+        hint = QLabel("right-click a channel to remove")
+        hint.setObjectName("Muted")
+        add_btn = QToolButton()
+        add_btn.setText("+ Add")
+        add_btn.clicked.connect(self._on_add_channel)
+        header.addWidget(hint)
+        header.addStretch(1)
+        header.addWidget(add_btn)
+        channels_card.body().addLayout(header)
+
         self._tree = QTreeWidget()
         self._tree.setHeaderHidden(True)
         self._tree.setColumnCount(1)
-        for category, names in self.config.channels.items():
-            top = QTreeWidgetItem([f"{category}  ({len(names)})"])
-            top.setFlags(
-                top.flags() | Qt.ItemFlag.ItemIsAutoTristate | Qt.ItemFlag.ItemIsUserCheckable
-            )
-            top.setCheckState(0, Qt.CheckState.Checked)
-            for name in names:
-                child = QTreeWidgetItem([name])
-                child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                child.setCheckState(0, Qt.CheckState.Checked)
-                child.setData(0, Qt.ItemDataRole.UserRole, name)
-                top.addChild(child)
-            self._tree.addTopLevelItem(top)
-        self._tree.expandAll()
+        self._tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._tree.customContextMenuRequested.connect(self._on_tree_menu)
+        self._populate_tree()
         channels_card.body().addWidget(self._tree)
         layout.addWidget(channels_card, 1)
 
@@ -74,7 +83,8 @@ class DownloadView(QWidget):
         mode_row = QHBoxLayout()
         self._apple_radio = QRadioButton("Apple only")
         self._all_radio = QRadioButton("All files")
-        self._apple_radio.setChecked(True)
+        self._apple_radio.setChecked(self.settings.default_apple_only)
+        self._all_radio.setChecked(not self.settings.default_apple_only)
         group = QButtonGroup(self)
         group.addButton(self._apple_radio)
         group.addButton(self._all_radio)
@@ -83,7 +93,7 @@ class DownloadView(QWidget):
         filters_card.body().addLayout(mode_row)
 
         self._resume = QCheckBox("Resume (skip already-downloaded)")
-        self._resume.setChecked(True)
+        self._resume.setChecked(self.settings.default_resume)
         filters_card.body().addWidget(self._resume)
 
         kw_row = QHBoxLayout()
@@ -97,12 +107,30 @@ class DownloadView(QWidget):
         limit_row.addWidget(QLabel("Scan limit / channel"))
         self._limit = QSpinBox()
         self._limit.setRange(0, 1_000_000)
-        self._limit.setValue(0)
+        self._limit.setValue(self.settings.default_limit)
         self._limit.setSpecialValueText("All")
         limit_row.addStretch(1)
         limit_row.addWidget(self._limit)
         filters_card.body().addLayout(limit_row)
         layout.addWidget(filters_card)
+
+        # Download location bar
+        location_card = Card("Download folder")
+        self._location_label = QLabel()
+        self._location_label.setObjectName("Muted")
+        self._location_label.setWordWrap(True)
+        location_card.body().addWidget(self._location_label)
+        loc_buttons = QHBoxLayout()
+        change_btn = QPushButton("Change…")
+        change_btn.clicked.connect(self._on_change_location)
+        open_btn = QPushButton("Open")
+        open_btn.clicked.connect(self._on_open_location)
+        loc_buttons.addWidget(change_btn)
+        loc_buttons.addWidget(open_btn)
+        loc_buttons.addStretch(1)
+        location_card.body().addLayout(loc_buttons)
+        layout.addWidget(location_card)
+        self.refresh_location()
 
         # Run controls
         controls = QHBoxLayout()
@@ -157,6 +185,84 @@ class DownloadView(QWidget):
 
         return col
 
+    # ── Channel management ──────────────────────────────────────────────────────
+
+    def _populate_tree(self) -> None:
+        self._tree.clear()
+        for category, names in self.config.channels.items():
+            top = QTreeWidgetItem([f"{category}  ({len(names)})"])
+            top.setFlags(
+                top.flags() | Qt.ItemFlag.ItemIsAutoTristate | Qt.ItemFlag.ItemIsUserCheckable
+            )
+            top.setCheckState(0, Qt.CheckState.Checked)
+            top.setData(0, Qt.ItemDataRole.UserRole + 1, category)
+            for name in names:
+                child = QTreeWidgetItem([name])
+                child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                child.setCheckState(0, Qt.CheckState.Checked)
+                child.setData(0, Qt.ItemDataRole.UserRole, name)
+                child.setData(0, Qt.ItemDataRole.UserRole + 1, category)
+                top.addChild(child)
+            self._tree.addTopLevelItem(top)
+        self._tree.expandAll()
+
+    def reload_channels(self) -> None:
+        self.config = load_config()
+        self._populate_tree()
+
+    def _on_add_channel(self) -> None:
+        dialog = AddChannelDialog(list(self.config.channels.keys()), self)
+        if dialog.exec() != AddChannelDialog.DialogCode.Accepted:
+            return
+        category, name = dialog.result_values()
+        # Seed override from the current effective config the first time.
+        if not self.settings.channels:
+            self.settings.set_channels(self.config.channels)
+        self.settings.add_channel(category, name)
+        self.settings.save()
+        self.reload_channels()
+
+    def _on_tree_menu(self, pos) -> None:
+        item = self._tree.itemAt(pos)
+        if item is None or item.parent() is None:
+            return
+        name = item.data(0, Qt.ItemDataRole.UserRole)
+        category = item.data(0, Qt.ItemDataRole.UserRole + 1)
+        menu = QMenu(self)
+        remove = menu.addAction(f"Remove @{name}")
+        chosen = menu.exec(self._tree.viewport().mapToGlobal(pos))
+        if chosen == remove:
+            if not self.settings.channels:
+                self.settings.set_channels(self.config.channels)
+            self.settings.remove_channel(category, name)
+            self.settings.save()
+            self.reload_channels()
+
+    # ── Download location ───────────────────────────────────────────────────────
+
+    def refresh_location(self) -> None:
+        self._location_label.setText(str(paths.download_dir()))
+
+    def _on_change_location(self) -> None:
+        chosen = QFileDialog.getExistingDirectory(
+            self,
+            "Choose download folder",
+            str(paths.download_dir()),
+            QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontUseNativeDialog,
+        )
+        if not chosen:
+            return
+        paths.set_download_dir(chosen)
+        self.settings.download_dir = chosen
+        self.settings.save()
+        self.refresh_location()
+        self.append_log(f"Download folder set to {chosen}")
+
+    def _on_open_location(self) -> None:
+        target = paths.download_dir()
+        target.mkdir(parents=True, exist_ok=True)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(target)))
+
     # ── Public API used by MainWindow ───────────────────────────────────────────
 
     def selected_channels(self) -> list[str]:
@@ -181,8 +287,6 @@ class DownloadView(QWidget):
         }
 
     def prepare_run(self, channels: list[str]) -> None:
-        """Reset progress rows for the channels about to be scraped."""
-        self._totals = {"downloaded": 0, "skipped": 0, "errors": 0}
         for row in self._rows.values():
             row.setParent(None)
         self._rows.clear()
@@ -190,7 +294,7 @@ class DownloadView(QWidget):
             row = ChannelProgress(channel)
             self._rows[channel] = row
             self._rows_layout.insertWidget(self._rows_layout.count() - 1, row)
-        self._update_stats()
+        self._recompute_totals()
 
     def set_running(self, running: bool) -> None:
         self.start_button.setEnabled(not running)
@@ -222,14 +326,9 @@ class DownloadView(QWidget):
         self._recompute_totals()
 
     def _recompute_totals(self) -> None:
-        downloaded = sum(r.downloaded for r in self._rows.values())
-        skipped = sum(r.skipped for r in self._rows.values())
-        errors = sum(r.errors for r in self._rows.values())
-        self._stat_downloaded.set_value(downloaded)
-        self._stat_skipped.set_value(skipped)
-        self._stat_errors.set_value(errors)
+        self._stat_downloaded.set_value(sum(r.downloaded for r in self._rows.values()))
+        self._stat_skipped.set_value(sum(r.skipped for r in self._rows.values()))
+        self._stat_errors.set_value(sum(r.errors for r in self._rows.values()))
 
-    def _update_stats(self) -> None:
-        self._stat_downloaded.set_value(0)
-        self._stat_skipped.set_value(0)
-        self._stat_errors.set_value(0)
+    def warn(self, title: str, message: str) -> None:
+        QMessageBox.warning(self, title, message)

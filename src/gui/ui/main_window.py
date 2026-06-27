@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QButtonGroup,
     QHBoxLayout,
@@ -16,22 +18,26 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..core import organizer
+from ..core import organizer, paths
 from ..core.auth import AuthError
 from ..core.backend import DownloadController
 from ..core.config import get_credentials, load_config
+from ..core.settings import Settings
 from .download_view import DownloadView
 from .login_dialog import LoginCancelled, LoginDialog
 from .organize_view import OrganizeView
 from .settings_dialog import SettingsDialog
+from .theme import ThemeManager
 
 
 class MainWindow(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings, theme: ThemeManager) -> None:
         super().__init__()
         self.setWindowTitle("Apple Schematic Downloader")
         self.resize(1080, 720)
 
+        self.settings = settings
+        self.theme = theme
         self.config = load_config()
         self.controller = DownloadController()
 
@@ -45,7 +51,7 @@ class MainWindow(QMainWindow):
         root.addWidget(self._build_sidebar())
 
         self._stack = QStackedWidget()
-        self.download_view = DownloadView(self.config)
+        self.download_view = DownloadView(self.config, self.settings)
         self.organize_view = OrganizeView()
         self._stack.addWidget(self.download_view)
         self._stack.addWidget(self.organize_view)
@@ -103,6 +109,7 @@ class MainWindow(QMainWindow):
         self.controller.log.connect(self.download_view.append_log)
         self.controller.running_changed.connect(self.download_view.set_running)
         self.controller.failed.connect(self._on_run_failed)
+        self.controller.finished.connect(self._on_run_finished)
 
     async def _on_start(self) -> None:
         if self.controller.is_running:
@@ -138,6 +145,12 @@ class MainWindow(QMainWindow):
     def _on_run_failed(self, message: str) -> None:
         self.download_view.append_log(f"Error: {message}")
         self._warn("Download error", message)
+
+    def _on_run_finished(self, _totals: dict) -> None:
+        if self.settings.reveal_on_complete:
+            target = paths.download_dir()
+            target.mkdir(parents=True, exist_ok=True)
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(target)))
 
     # ── Organize wiring ─────────────────────────────────────────────────────────
 
@@ -220,7 +233,11 @@ class MainWindow(QMainWindow):
     # ── Misc ────────────────────────────────────────────────────────────────────
 
     def _open_settings(self) -> None:
-        SettingsDialog(self).exec()
+        SettingsDialog(self.settings, self.theme, self).exec()
+        # Reflect any location/channel changes made in the dialog.
+        self.download_view.refresh_location()
+        self.download_view.reload_channels()
+        self.organize_view.refresh_browser()
 
     def _warn(self, title: str, message: str) -> None:
         QMessageBox.warning(self, title, message)
