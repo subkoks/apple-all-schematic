@@ -21,13 +21,15 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 import qasync  # noqa: E402
-from PySide6.QtGui import QFontDatabase  # noqa: E402
+from PySide6.QtGui import QFontDatabase, QIcon  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from gui.core import paths  # noqa: E402
 from gui.core.settings import APP_NAME, Settings  # noqa: E402
 from gui.ui.main_window import MainWindow  # noqa: E402
 from gui.ui.theme import ThemeManager  # noqa: E402
+
+_ICON_FILE = Path(__file__).resolve().parent / "resources" / "app.icns"
 
 
 def main() -> None:
@@ -38,6 +40,8 @@ def main() -> None:
 
     # Use the real OS UI font (avoids a missing -apple-system family lookup).
     app.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont))
+    if _ICON_FILE.exists():
+        app.setWindowIcon(QIcon(str(_ICON_FILE)))
 
     settings = Settings.load()
     paths.apply(settings)
