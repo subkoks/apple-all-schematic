@@ -49,7 +49,11 @@ class AppConfig:
 
 
 def load_config() -> AppConfig:
-    """Read ``args/config.json``; fall back to scraper module constants."""
+    """Read ``args/config.json``; fall back to scraper module constants.
+
+    A user channel override (saved in :class:`gui.core.settings.Settings`) takes
+    precedence over both, so add/remove edits made in the UI win.
+    """
     channels = {k: list(v) for k, v in scraper.CHANNELS.items()}
     keywords = list(scraper.APPLE_KEYWORDS)
     extensions = sorted(scraper.ALLOWED_EXTENSIONS)
@@ -76,6 +80,13 @@ def load_config() -> AppConfig:
                 parallel_channels=int(dl.get("parallel_channels", tuning.parallel_channels)),
                 state_save_interval=int(dl.get("state_save_interval", tuning.state_save_interval)),
             )
+
+    # User override from settings wins when present.
+    from .settings import Settings
+
+    override = Settings.load().channels
+    if override:
+        channels = {k: list(v) for k, v in override.items() if v}
 
     return AppConfig(
         channels=channels,

@@ -1,20 +1,23 @@
-/* apple-all-schematic — dark, modern Qt Style Sheet
-   Palette: graphite background, soft surfaces, Apple-blue accent. */
+/* apple-all-schematic — modern Qt Style Sheet template.
+   Colors are TOKEN placeholders (wrapped in at-signs) substituted by
+   gui.ui.theme.ThemeManager — one palette for dark, one for light.
+   Do not hardcode hex here. */
 
+/* Font family is set from the OS system font in code (gui.app) to avoid a
+   missing-family lookup; here we only set size + color. */
 * {
-    font-family: "SF Pro Text", "Segoe UI", "Inter", -apple-system, sans-serif;
     font-size: 13px;
-    color: #e6e8ec;
+    color: @TEXT@;
 }
 
 QWidget#Root, QMainWindow {
-    background-color: #16181d;
+    background-color: @BG@;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 QWidget#Sidebar {
-    background-color: #1b1e24;
-    border-right: 1px solid #262a32;
+    background-color: @SURFACE@;
+    border-right: 1px solid @BORDER@;
 }
 
 QPushButton#NavButton {
@@ -23,46 +26,46 @@ QPushButton#NavButton {
     border-radius: 8px;
     padding: 10px 14px;
     text-align: left;
-    color: #aab1bd;
+    color: @TEXTDIM@;
     font-size: 14px;
 }
 QPushButton#NavButton:hover {
-    background-color: #232730;
-    color: #e6e8ec;
+    background-color: @HOVER@;
+    color: @TEXT@;
 }
 QPushButton#NavButton:checked {
-    background-color: #243043;
-    color: #ffffff;
+    background-color: @SELECT@;
+    color: @TEXT@;
     font-weight: 600;
 }
 
 QLabel#AppTitle {
     font-size: 15px;
     font-weight: 700;
-    color: #ffffff;
+    color: @TEXTSTRONG@;
     padding: 4px 6px;
 }
 QLabel#AppSubtitle {
-    color: #6b7280;
+    color: @MUTED@;
     font-size: 11px;
     padding: 0 6px 8px 6px;
 }
 
 /* ── Cards / surfaces ────────────────────────────────────────────────── */
 QFrame#Card {
-    background-color: #1d2128;
-    border: 1px solid #262a32;
+    background-color: @CARD@;
+    border: 1px solid @BORDER@;
     border-radius: 12px;
 }
 QLabel#SectionTitle {
     font-size: 15px;
     font-weight: 600;
-    color: #f3f4f6;
+    color: @TEXTSTRONG@;
 }
-QLabel#Muted { color: #8a92a0; }
+QLabel#Muted { color: @MUTED@; }
 QLabel#StatChip {
-    background-color: #232730;
-    border: 1px solid #2d323c;
+    background-color: @SURFACE2@;
+    border: 1px solid @BORDER2@;
     border-radius: 8px;
     padding: 6px 12px;
     font-weight: 600;
@@ -70,73 +73,99 @@ QLabel#StatChip {
 
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 QPushButton {
-    background-color: #232730;
-    border: 1px solid #2d323c;
+    background-color: @SURFACE2@;
+    border: 1px solid @BORDER2@;
     border-radius: 8px;
     padding: 8px 16px;
-    color: #e6e8ec;
+    color: @TEXT@;
 }
-QPushButton:hover { background-color: #2a2f3a; }
-QPushButton:disabled { color: #565d68; background-color: #1c1f25; }
+QPushButton:hover { background-color: @HOVER@; }
+QPushButton:disabled { color: @DISABLEDTEXT@; background-color: @DISABLEDBG@; }
 
 QPushButton#Primary {
-    background-color: #2f6df6;
+    background-color: @ACCENT@;
     border: none;
-    color: #ffffff;
+    color: @ACCENTTEXT@;
     font-weight: 600;
 }
-QPushButton#Primary:hover { background-color: #3b78ff; }
-QPushButton#Primary:disabled { background-color: #2a3650; color: #8d9bb5; }
+QPushButton#Primary:hover { background-color: @ACCENTHOVER@; }
+QPushButton#Primary:disabled { background-color: @ACCENTDISABLEDBG@; color: @ACCENTDISABLEDTEXT@; }
 
 QPushButton#Danger {
-    background-color: #3a2126;
-    border: 1px solid #5a2a31;
-    color: #ff8a93;
+    background-color: @DANGERBG@;
+    border: 1px solid @DANGERBORDER@;
+    color: @DANGERTEXT@;
     font-weight: 600;
 }
-QPushButton#Danger:hover { background-color: #47272d; }
+QPushButton#Danger:hover { background-color: @DANGERBORDER@; }
 
 /* ── Inputs ──────────────────────────────────────────────────────────── */
 QLineEdit, QSpinBox, QComboBox {
-    background-color: #14161b;
-    border: 1px solid #2d323c;
+    background-color: @FIELD@;
+    border: 1px solid @BORDER2@;
     border-radius: 8px;
     padding: 8px 10px;
-    selection-background-color: #2f6df6;
+    selection-background-color: @ACCENT@;
 }
-QLineEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid #2f6df6; }
+QLineEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid @ACCENT@; }
+QComboBox QAbstractItemView {
+    background-color: @CARD@;
+    border: 1px solid @BORDER@;
+    selection-background-color: @SELECT@;
+}
 
-/* ── Trees / lists ───────────────────────────────────────────────────── */
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+QTabWidget::pane {
+    border: 1px solid @BORDER@;
+    border-radius: 10px;
+    top: -1px;
+}
+QTabBar::tab {
+    background: transparent;
+    color: @MUTED@;
+    padding: 8px 16px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+QTabBar::tab:selected {
+    background-color: @CARD@;
+    color: @TEXT@;
+    font-weight: 600;
+}
+QTabBar::tab:hover { color: @TEXT@; }
+
+/* ── Trees / lists / tables ──────────────────────────────────────────── */
 QTreeWidget, QTreeView, QListWidget, QTableWidget {
-    background-color: #14161b;
-    border: 1px solid #262a32;
+    background-color: @FIELD@;
+    border: 1px solid @BORDER@;
     border-radius: 10px;
     outline: 0;
 }
 QTreeWidget::item, QListWidget::item { padding: 5px 4px; }
-QTreeWidget::item:selected, QListWidget::item:selected {
-    background-color: #243043;
-    color: #ffffff;
+QTreeWidget::item:selected, QTreeView::item:selected,
+QListWidget::item:selected, QTableWidget::item:selected {
+    background-color: @SELECT@;
+    color: @TEXT@;
 }
 QHeaderView::section {
-    background-color: #1b1e24;
-    color: #8a92a0;
+    background-color: @SURFACE@;
+    color: @MUTED@;
     border: none;
-    border-bottom: 1px solid #262a32;
+    border-bottom: 1px solid @BORDER@;
     padding: 8px;
 }
 
 /* ── Progress ────────────────────────────────────────────────────────── */
 QProgressBar {
-    background-color: #14161b;
-    border: 1px solid #2d323c;
+    background-color: @FIELD@;
+    border: 1px solid @BORDER2@;
     border-radius: 7px;
     height: 14px;
     text-align: center;
-    color: #c4c9d2;
+    color: @TEXT@;
 }
 QProgressBar::chunk {
-    background-color: #2f6df6;
+    background-color: @ACCENT@;
     border-radius: 6px;
 }
 
@@ -144,21 +173,26 @@ QProgressBar::chunk {
 QCheckBox, QRadioButton { spacing: 8px; }
 QCheckBox::indicator, QRadioButton::indicator { width: 16px; height: 16px; }
 
-/* ── Misc ────────────────────────────────────────────────────────────── */
+/* ── Scrollbars ──────────────────────────────────────────────────────── */
 QScrollBar:vertical {
     background: transparent; width: 10px; margin: 2px;
 }
 QScrollBar::handle:vertical {
-    background: #313742; border-radius: 5px; min-height: 30px;
+    background: @SCROLL@; border-radius: 5px; min-height: 30px;
 }
-QScrollBar::handle:vertical:hover { background: #3c434f; }
+QScrollBar::handle:vertical:hover { background: @SCROLLHOVER@; }
 QScrollBar::add-line, QScrollBar::sub-line { height: 0; }
 
+/* ── Log view ────────────────────────────────────────────────────────── */
 QPlainTextEdit#LogView {
-    background-color: #101216;
-    border: 1px solid #262a32;
+    background-color: @LOGBG@;
+    border: 1px solid @BORDER@;
     border-radius: 10px;
-    font-family: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    font-family: "Menlo", "SF Mono", "JetBrains Mono", monospace;
     font-size: 12px;
-    color: #9aa4b2;
+    color: @MUTED@;
 }
+
+/* ── Dialogs ─────────────────────────────────────────────────────────── */
+QDialog { background-color: @BG@; }
+QLabel { color: @TEXT@; }
