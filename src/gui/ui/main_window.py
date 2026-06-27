@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QSize, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -24,6 +24,7 @@ from ..core.backend import DownloadController
 from ..core.config import get_credentials, load_config
 from ..core.settings import Settings
 from .download_view import DownloadView
+from .icons import nav_icon
 from .login_dialog import LoginCancelled, LoginDialog
 from .organize_view import OrganizeView
 from .settings_dialog import SettingsDialog
@@ -78,13 +79,18 @@ class MainWindow(QMainWindow):
         layout.addWidget(subtitle)
         layout.addSpacing(10)
 
+        nav_icon_size = QSize(18, 18)
         self._nav_group = QButtonGroup(self)
         self._nav_group.setExclusive(True)
-        for index, label in enumerate(("Download", "Organize")):
+        for index, (label, glyph) in enumerate(
+            (("Download", "download"), ("Organize", "organize"))
+        ):
             btn = QPushButton(label)
             btn.setObjectName("NavButton")
             btn.setCheckable(True)
             btn.setChecked(index == 0)
+            btn.setIcon(nav_icon(glyph))
+            btn.setIconSize(nav_icon_size)
             btn.clicked.connect(lambda _=False, i=index: self._stack.setCurrentIndex(i))
             self._nav_group.addButton(btn, index)
             layout.addWidget(btn)
@@ -93,6 +99,8 @@ class MainWindow(QMainWindow):
 
         settings_btn = QPushButton("Settings")
         settings_btn.setObjectName("NavButton")
+        settings_btn.setIcon(nav_icon("settings"))
+        settings_btn.setIconSize(nav_icon_size)
         settings_btn.clicked.connect(self._open_settings)
         layout.addWidget(settings_btn)
         return bar
