@@ -3,8 +3,8 @@
 Invoked by scripts/build_dmg.sh:
 
     dmgbuild -s src/gui/packaging/dmg_settings.py \
-        -D app="dist/Apple Schematic Downloader.app" \
-        "Apple Schematic Downloader" "dist/Apple Schematic Downloader.dmg"
+        -D app="dist/BoardVault.app" \
+        "BoardVault" "dist/BoardVault.dmg"
 
 ``defines`` is injected by dmgbuild from the -D flags.
 """
@@ -12,7 +12,7 @@ Invoked by scripts/build_dmg.sh:
 import os.path
 
 # -D app=… (path to the built .app)
-application = defines.get("app", "dist/Apple Schematic Downloader.app")  # noqa: F821
+application = defines.get("app", "dist/BoardVault.app")  # noqa: F821
 appname = os.path.basename(application)
 
 # Contents of the disk image: the app plus a symlink to /Applications.

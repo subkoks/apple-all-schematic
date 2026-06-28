@@ -10,6 +10,8 @@ functions take explicit dirs, so this is sufficient and keeps the CLI untouched.
 
 from __future__ import annotations
 
+import contextlib
+import shutil
 import sys
 from pathlib import Path
 
@@ -18,7 +20,7 @@ from PySide6.QtCore import QStandardPaths
 import organize_downloads as organizer
 import tg_schematic_downloader as scraper
 
-from .settings import Settings
+from .settings import LEGACY_APP_NAME, Settings
 
 
 def is_frozen() -> bool:
@@ -38,7 +40,7 @@ def default_download_dir() -> Path:
     if is_frozen():
         dl = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
         if dl:
-            return Path(dl) / "Apple Schematics"
+            return Path(dl) / "BoardVault"
     return data_root() / "downloads"
 
 
@@ -46,8 +48,31 @@ def default_organized_dir() -> Path:
     return data_root() / "organized"
 
 
+def migrate_legacy() -> None:
+    """One-time copy of data from the pre-rebrand dir (Apple Schematic Downloader).
+
+    Renaming the app moved the QStandardPaths data dir; without this the user would lose
+    their Telegram session (forcing re-login) and settings. No-op once migrated or when no
+    legacy dir exists.
+    """
+    new_root = data_root()
+    if (new_root / "settings.json").exists():
+        return
+    legacy_root = new_root.parent / LEGACY_APP_NAME
+    if not legacy_root.is_dir() or legacy_root == new_root:
+        return
+    new_root.mkdir(parents=True, exist_ok=True)
+    for item in legacy_root.iterdir():
+        dest = new_root / item.name
+        if dest.exists() or not item.is_file():
+            continue
+        with contextlib.suppress(OSError):
+            shutil.copy2(item, dest)
+
+
 def apply(settings: Settings) -> None:
     """Reassign scraper/organizer path globals based on env + settings. Run once at startup."""
+    migrate_legacy()
     root = data_root()
     root.mkdir(parents=True, exist_ok=True)
 

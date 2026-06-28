@@ -1,1 +1,1 @@
-"""Qt widgets for the apple-all-schematic desktop app."""
+"""Qt widgets for the BoardVault desktop app."""

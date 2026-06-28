@@ -13,7 +13,9 @@ from pathlib import Path
 
 from PySide6.QtCore import QStandardPaths
 
-APP_NAME = "Apple Schematic Downloader"
+APP_NAME = "BoardVault"
+APP_TAGLINE = "Apple schematic & boardview downloader"
+LEGACY_APP_NAME = "Apple Schematic Downloader"
 
 VALID_THEMES = ("system", "dark", "light")
 

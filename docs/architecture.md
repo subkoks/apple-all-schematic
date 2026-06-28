@@ -1,10 +1,35 @@
-# Architecture — apple-all-schematic
+# Architecture — BoardVault (apple-all-schematic)
 
 ## Overview
 
-Async Python CLI tool that scrapes Apple device schematics from Telegram channels, with file organization and categorization.
+Async Python engine that scrapes Apple device schematics from Telegram channels, with file
+organization and categorization, exposed through two front-ends: a **CLI** and the **BoardVault**
+desktop app (PySide6). Both share the same engine, `state.json`, and Telegram session.
 
-## Module Map
+## Desktop app (`src/gui/`)
+
+The GUI reuses the CLI modules in-process — no IPC, no sidecar. `qasync` provides a single event
+loop shared by Qt and Telethon's asyncio.
+
+```
+src/gui/
+├── app.py            ← entry: QApplication + qasync loop; bootstraps paths + theme
+├── core/
+│   ├── settings.py   ← user prefs (theme, folders, channel overrides) as JSON
+│   ├── paths.py      ← writable data-root resolution; overrides CLI path globals at startup
+│   ├── config.py     ← merges args/config.json with the user's channel override
+│   ├── auth.py       ← non-interactive Telegram login (phone/code/2FA via the UI)
+│   ├── backend.py    ← DownloadController: cancellable task loop → Qt signals
+│   └── organizer.py  ← async bridge to organize_downloads
+└── ui/               ← main_window, download/organize views, dialogs, theme, icons
+```
+
+Key idea: instead of editing the CLI modules, `paths.apply()` reassigns their path globals
+(`DOWNLOAD_DIR`, `STATE_FILE`, `SESSION_FILE`, …) once at startup, so a frozen `.app` writes to
+user-writable locations while the CLI stays untouched. Packaging: PyInstaller spec → `.app`,
+dmgbuild → unsigned `.dmg`.
+
+## Module Map (engine)
 
 ```
 src/

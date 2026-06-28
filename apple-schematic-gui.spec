@@ -1,8 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec — builds the desktop app.
+"""PyInstaller spec — builds the BoardVault desktop app.
 
-macOS:    pyinstaller apple-schematic-gui.spec        ->  dist/Apple Schematic Downloader.app
-Windows:  pyinstaller apple-schematic-gui.spec        ->  dist/Apple Schematic Downloader/...
+macOS:    pyinstaller apple-schematic-gui.spec        ->  dist/BoardVault.app
+Windows:  pyinstaller apple-schematic-gui.spec        ->  dist/boardvault/...
 
 The GUI reuses the sibling CLI modules under ``src/``, so that directory is added to
 the analysis path and the theme/config data files are bundled.
@@ -40,7 +40,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="apple-schematic-gui",
+    name="boardvault",
     console=False,
     disable_windowed_traceback=False,
     icon=icon_path,
@@ -49,11 +49,11 @@ coll = COLLECT(
     exe,
     a.binaries,
     a.datas,
-    name="apple-schematic-gui",
+    name="boardvault",
 )
 app = BUNDLE(
     coll,
-    name="Apple Schematic Downloader.app",
+    name="BoardVault.app",
     icon=icon_path,
-    bundle_identifier="com.subkoks.apple-all-schematic",
+    bundle_identifier="com.subkoks.boardvault",
 )

@@ -3,7 +3,7 @@
 #
 #   ./scripts/build_macos.sh
 #
-# Output: dist/Apple Schematic Downloader.app
+# Output: dist/BoardVault.app
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,4 +27,4 @@ echo "Building…"
 pyinstaller --noconfirm apple-schematic-gui.spec
 
 echo
-echo "Done: dist/Apple Schematic Downloader.app"
+echo "Done: dist/BoardVault.app"
