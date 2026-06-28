@@ -166,6 +166,10 @@ class DownloadView(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        # Let the card surface show through instead of the default white viewport.
+        scroll.setStyleSheet(
+            "QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; }"
+        )
         self._rows_host = QWidget()
         self._rows_layout = QVBoxLayout(self._rows_host)
         self._rows_layout.setContentsMargins(0, 0, 0, 0)

@@ -34,7 +34,7 @@ from .theme import ThemeManager
 class MainWindow(QMainWindow):
     def __init__(self, settings: Settings, theme: ThemeManager) -> None:
         super().__init__()
-        self.setWindowTitle("Apple Schematic Downloader")
+        self.setWindowTitle("BoardVault")
         self.resize(1080, 720)
 
         self.settings = settings
@@ -71,9 +71,9 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(14, 18, 14, 18)
         layout.setSpacing(6)
 
-        title = QLabel("Apple Schematics")
+        title = QLabel("BoardVault")
         title.setObjectName("AppTitle")
-        subtitle = QLabel("Telegram downloader")
+        subtitle = QLabel("Apple board schematics")
         subtitle.setObjectName("AppSubtitle")
         layout.addWidget(title)
         layout.addWidget(subtitle)

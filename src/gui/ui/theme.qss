@@ -1,4 +1,4 @@
-/* apple-all-schematic — modern Qt Style Sheet template.
+/* BoardVault — modern Qt Style Sheet template.
    Colors are TOKEN placeholders (wrapped in at-signs) substituted by
    gui.ui.theme.ThemeManager — one palette for dark, one for light.
    Do not hardcode hex here. */

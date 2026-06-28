@@ -1,189 +1,148 @@
-# apple-all-schematic
+# BoardVault
 
-Bulk download Apple device schematics and boardview files from free Telegram channels. Clean originals, no watermarks.
+**Apple schematic & boardview downloader** — a native macOS app (and CLI) that downloads and
+organizes Apple device schematics and boardview files from public Telegram channels. Clean
+originals, no watermarks.
 
-## Overview
+![BoardVault — dark](docs/images/screenshot-dark.png)
 
-Download comprehensive Apple product schematics and boardviews (iPhone, iPad, MacBook, iMac, Mac Mini, Mac Pro, Mac Studio, Apple Watch, AirPods, Apple TV, HomePod) from curated Telegram channels using the Telethon library.
+<details>
+<summary>Light theme</summary>
 
-## Project Structure
+![BoardVault — light](docs/images/screenshot-light.png)
 
-```text
-apple-all-schematic/
-├── README.md              # This file
-├── .env.example           # Environment variables template
-├── pyproject.toml         # Project metadata and tooling config
-├── requirements.txt       # Python dependencies
-├── goals/                 # Workflow definitions (markdown)
-│   └── APPLE_ALL_SCHEMATIC_PLAN.md
-├── docs/                  # Project documentation
-│   └── architecture.md
-├── scripts/               # Deterministic scripts
-│   └── cloud-setup.sh
-├── context/               # Domain knowledge, references
-├── args/                  # Config files (yaml/json)
-├── src/                   # Application source code
-│   ├── tg_schematic_downloader.py
-│   ├── organize_downloads.py
-│   └── validation.py
-├── tests/                 # Test suite (pytest)
-└── data/                  # Generated at runtime (gitignored)
-    ├── downloads/         # Downloaded files (organized by channel)
-    ├── state.json         # Resume state (auto-generated)
-    └── tg_scraper_session.session  # Telegram session (auto-generated)
-```
+</details>
 
-## Quick Start
+## What it is
 
-### 1. Get Telegram API credentials (free, 2 min)
+BoardVault wraps a battle-tested Telegram scraper in two front-ends:
 
-1. Go to **<https://my.telegram.org>**
-2. Log in with your phone number
-3. Click **"API development tools"** → **"Create new application"**
-4. Fill in any name/platform → Submit
-5. Copy `api_id` (number) and `api_hash` (string)
+- **Desktop app (macOS):** a clean PySide6 GUI — pick channels, filter, watch live per-channel
+  progress, then sort everything into a tidy `Apple/<product>` and `<brand>` library. System/Dark/Light
+  themes, guided Telegram login (no terminal), and a configurable download folder.
+- **CLI:** the original single-file scraper for power users, automation, and headless/cloud runs.
 
-### 2. Configure environment
+Both share the same engine, state file, and Telegram session, so you can switch freely.
 
-```bash
-# Copy template and edit with your credentials
-cp .env.example .env
+---
 
-# Edit .env and add your credentials:
-# TG_API_ID=12345678
-# TG_API_HASH=abcdef1234567890abcdef1234567890
-```
+## Install (macOS app)
 
-### 3. Install dependencies
+1. Download or build `BoardVault.dmg` (see **Build from source** below), open it, and drag
+   **BoardVault** into **Applications**.
+2. The app is **unsigned**, so on first launch macOS Gatekeeper will block it. Open it once via
+   either:
+   - **Right-click** BoardVault in Applications → **Open** → **Open**, or
+   - Terminal: `xattr -dr com.apple.quarantine "/Applications/BoardVault.app"`
+3. After the first open it launches normally.
 
-```bash
-pip install -r requirements.txt
-```
+> BoardVault stores its data in `~/Library/Application Support/subkoks/BoardVault/` and downloads to
+> `~/Downloads/BoardVault/` by default (changeable in-app).
 
-### 4. Run the downloader
+## Using the app
 
-```bash
-cd src
+1. **Get Telegram API credentials** (free, ~2 min) at **<https://my.telegram.org>** → *API
+   development tools* → note your **API ID** and **API Hash**.
+2. **Settings → Account:** paste the API ID and hash (stored locally in `.env`, never uploaded).
+3. **Download tab:** choose channels (add/remove your own with **+ Add** / right-click), pick a
+   filter (**Apple only** or **All files**), then **Start**. The first run asks for your phone
+   number, login code, and 2FA password — all in-app.
+4. Watch **Live progress** per channel; files land in your **Download folder** (**Change…** / **Open**).
+5. **Organize tab:** **Scan (dry-run)** to preview the classification, then **Organize** to sort
+   files into `Apple/Computers/MacBook_Pro`, `Apple/Phones/iPhone`, etc. Every move is reversible
+   with **Undo**.
+6. **Settings → About & Help** has the quick-start, links, and version info.
 
-# Download all Apple products (recommended)
-python tg_schematic_downloader.py --apple
+---
 
-# Resume after interruption (always use --resume on re-runs)
-python tg_schematic_downloader.py --apple --resume
+## CLI
 
-# Test run — only scan last 2000 messages per channel
-python tg_schematic_downloader.py --apple --limit 2000
+For automation or headless runs, use the scraper directly.
 
-# Specific product only
-python tg_schematic_downloader.py --filter iphone "820-02"
-
-# See all available channels and Apple keywords
-python tg_schematic_downloader.py --list-channels
-```
-
-**First run:** Telegram will ask for your phone number + verification code. After that, a session file is saved and future runs are fully automatic.
-
-## Usage Examples
+### 1. Credentials & install
 
 ```bash
-# All Apple products (iPhone, iPad, MacBook, Watch, AirPods, iMac...)
-python tg_schematic_downloader.py --apple
-
-# Apple only, resume after interruption
-python tg_schematic_downloader.py --apple --resume
-
-# Only iPhone 14/15 era (board numbers)
-python tg_schematic_downloader.py --filter "820-02" iphone
-
-# Only specific channels
-python tg_schematic_downloader.py --channels SMART_PHONE_SCHEMATICS schematicslaptop --apple
-
-# Scan only last 5000 messages per channel (faster test run)
-python tg_schematic_downloader.py --apple --limit 5000
+cp .env.example .env          # then edit: TG_API_ID=... and TG_API_HASH=...
+pip install -e .              # core CLI deps only
 ```
 
-## Channels Being Scraped
-
-### Laptop / Desktop (MacBook, iMac, Mac Mini)
-
-- `@schematicslaptop` - Largest archive — 10,000+ posts, PDF + boardview files
-- `@biosarchive` - Same admin, BIOS + schematics, Apple Mac Mini confirmed
-- `@BIOSARCHIVE_PHOTOS` - Companion channel, occasional file attachments
-- `@freeschematicdiagram` - Mixed laptops + phones
-
-### Phone / Mobile (iPhone, iPad, Apple Watch)
-
-- `@SMART_PHONE_SCHEMATICS` - Dedicated smartphone schematics, iPhone confirmed
-- `@mobileshematic` - Mobile schematics archive
-- `@schematicmobile` - Mixed mobile schematic files
-
-## What Gets Downloaded
-
-### File types
-
-`.pdf` `.zip` `.rar` `.7z` `.brd` `.bvr` `.bdv` `.cad` `.fz` `.asc` `.tvw` `.pcb`
-
-### Apple keyword filter (`--apple` flag)
-
-Matches filenames **and** message captions against:
-
-- **Product names:** `iphone`, `ipad`, `macbook`, `imac`, `mac mini`, `mac pro`, `mac studio`, `apple watch`, `airpods`, `apple tv`, `homepod`, `ipod`
-- **Board number prefixes:** `820-0`, `051-` (Apple's internal doc numbering)
-- **iPhone codenames:** `n61`, `n71`, `d10`, `d20`, `d22`, `n841`, `d321`, `d421`, `d52g`, `d16`, `d63`, `d73`, `d83`
-- **iPad codenames:** `j72`, `j217`, `j120`
-- **Mac codenames:** `j137`, `j680`, `j152`, `j314`, `j316`
-- **Apple Watch SoCs:** `s4`–`s9`, `t8301`, `t8302`
-
-## Output Structure
-
-Files are organized by channel:
-
-```text
-data/downloads/
-├── schematicslaptop/
-│   ├── Apple_MacBook_Pro_820-02757.rar
-│   ├── Apple_MacBook_Air_M1_820-02016.pdf
-│   └── ...
-├── SMART_PHONE_SCHEMATICS/
-│   ├── iPhone_15_Pro_D73_Schematic.pdf
-│   ├── iPhone_14_820-02778.rar
-│   └── ...
-└── biosarchive/
-    └── ...
-```
-
-## Resume & State
-
-The script saves progress to `data/state.json`. If interrupted:
+### 2. Run
 
 ```bash
-# Just re-run with --resume — skips already downloaded files
-python tg_schematic_downloader.py --apple --resume
+# All Apple products (recommended); always add --resume on re-runs
+python src/tg_schematic_downloader.py --apple --resume
+
+# Test run — only scan the last 2000 messages per channel
+python src/tg_schematic_downloader.py --apple --limit 2000
+
+# Only specific keywords / channels
+python src/tg_schematic_downloader.py --filter "820-02" iphone
+python src/tg_schematic_downloader.py --channels SMART_PHONE_SCHEMATICS schematicslaptop --apple
+
+# List channels, keywords, and extensions
+python src/tg_schematic_downloader.py --list-channels
+
+# Organize downloads into the categorized library
+python src/organize_downloads.py --dry-run   # preview
+python src/organize_downloads.py             # execute
+python src/organize_downloads.py --undo      # reverse
 ```
 
-## Expected Results
+State is saved to `data/state.json` after every file, so `--resume` safely skips what you already
+have.
 
-| Channel                   | Est. Total Messages | Est. Apple Files |
-| ------------------------- | ------------------- | ---------------- |
-| `@schematicslaptop`       | ~12,000             | ~200–400         |
-| `@biosarchive`            | ~8,000              | ~100–200         |
-| `@SMART_PHONE_SCHEMATICS` | ~5,000              | ~500–1000        |
-| `@mobileshematic`         | ~3,000              | ~200–500         |
+---
 
-Full run without `--limit` may take **1–4 hours** depending on connection. All files are raw originals with **no watermarks**.
+## Channels & filters
+
+**Default channels** (editable in-app): laptop/desktop (`@schematicslaptop`, `@biosarchive`,
+`@BIOSARCHIVE_PHOTOS`, `@freeschematicdiagram`, `@notebookschematic`, `@laptop_bios_schematic`,
+`@alischematics`, `@hrtechno`), mobile (`@SMART_PHONE_SCHEMATICS`, `@mobileshematic`,
+`@schematicmobile`), and Apple-specific (`@Mac_Shematic_Santale`).
+
+**File types:** `.pdf` `.zip` `.rar` `.7z` `.brd` `.bvr` `.bdv` `.bv` `.cad` `.fz` `.asc` `.tvw`
+`.pcb` `.ddb` `.cst` `.f2b` `.gr` `.bin` `.rom`.
+
+**Apple filter** matches filenames and captions against product names, board-number prefixes
+(`820-`, `051-`), and iPhone/iPad/Mac codenames (e.g. `n61`, `j137`, `A2141`, `EMC 2835`).
+
+## Build from source
+
+```bash
+pip install -e ".[gui]"            # GUI deps (PySide6, qasync)
+./scripts/run_gui.sh               # run the app in development
+
+pip install -e ".[build]"          # packaging deps (pyinstaller, dmgbuild)
+./scripts/build_dmg.sh             # -> dist/BoardVault.dmg
+```
+
+The app icon is generated with `./scripts/make_icon.sh` (built-in `sips`/`iconutil`).
+
+## Troubleshooting
+
+- **"BoardVault is damaged / from an unidentified developer":** it's unsigned — use the right-click →
+  Open or `xattr` step in **Install** above.
+- **Login loops / wrong code:** re-open **Settings → Account → Log out**, then Start again.
+- **A channel won't resolve:** make sure the `@name` is exact and the channel is public/you've joined it.
 
 ## Documentation
 
-For comprehensive project planning, instructions, and supplementary sources, see:
-
-- [goals/APPLE_ALL_SCHEMATIC_PLAN.md](goals/APPLE_ALL_SCHEMATIC_PLAN.md)
+- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — step-by-step usage
+- [docs/architecture.md](docs/architecture.md) — how the app and CLI fit together
+- [docs/decisions/](docs/decisions/) — architecture decision records
 
 ## Requirements
 
-- Python 3.10+
-- Telegram account
-- Free Telegram API credentials from <https://my.telegram.org>
+- macOS (for the app) · Python 3.10+ (for the CLI / building) · a Telegram account · free API
+  credentials from <https://my.telegram.org>
+
+## Legal & responsible use
+
+Schematics and boardviews are downloaded from **public** Telegram channels and are intended for
+**device repair and education**. Respect intellectual-property rights and your local laws. BoardVault
+does not host, rehost, or distribute any files itself.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). This tool is intended for educational and device-repair use; respect intellectual property rights and use responsibly.
+MIT — see [LICENSE](LICENSE). Built with [Telethon](https://github.com/LonamiWebs/Telethon),
+[PySide6](https://doc.qt.io/qtforpython/), and [qasync](https://github.com/CabbageDevelopment/qasync).

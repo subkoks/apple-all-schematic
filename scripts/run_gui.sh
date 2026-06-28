@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch the apple-all-schematic desktop GUI in development.
+# Launch the BoardVault desktop GUI in development.
 #
 #   ./scripts/run_gui.sh
 #

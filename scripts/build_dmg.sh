@@ -3,7 +3,7 @@
 #
 #   ./scripts/build_dmg.sh
 #
-# Output: dist/Apple Schematic Downloader.dmg
+# Output: dist/BoardVault.dmg
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,7 +18,7 @@ fi
 PY="${PROJECT_DIR}/.venv/bin/python"
 [[ -x "${PY}" ]] || PY="python3"
 
-APP_NAME="Apple Schematic Downloader"
+APP_NAME="BoardVault"
 APP_PATH="dist/${APP_NAME}.app"
 DMG_PATH="dist/${APP_NAME}.dmg"
 

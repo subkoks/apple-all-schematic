@@ -2,10 +2,10 @@
 
 ## Project Overview
 
-- **Name:** apple-all-schematic
-- **Type:** CLI tool — Telegram scraper for Apple device schematics
-- **Stack:** Python 3.13 + Telethon (async Telegram client) + tqdm
-- **Status:** Active — downloading complete, now upgrading and optimizing
+- **Name:** BoardVault (repo slug `apple-all-schematic`)
+- **Type:** macOS desktop app (PySide6) + CLI — Telegram scraper for Apple device schematics
+- **Stack:** Python 3.10+ · Telethon · PySide6 + qasync (GUI) · PyInstaller + dmgbuild (packaging)
+- **Status:** Active — desktop app shipped (BoardVault.dmg), iterating on features
 - **Repo:** github.com/subkoks/apple-all-schematic
 
 ## Architecture

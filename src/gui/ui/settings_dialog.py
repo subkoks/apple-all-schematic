@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
@@ -21,9 +22,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .. import __version__
 from ..core import config, paths
-from ..core.settings import Settings
+from ..core.settings import APP_NAME, APP_TAGLINE, Settings
 from .theme import ThemeManager
+
+REPO_URL = "https://github.com/subkoks/apple-all-schematic"
 
 
 class SettingsDialog(QDialog):
@@ -46,6 +50,7 @@ class SettingsDialog(QDialog):
         tabs.addTab(self._appearance_tab(), "Appearance")
         tabs.addTab(self._locations_tab(), "Locations")
         tabs.addTab(self._behavior_tab(), "Behavior")
+        tabs.addTab(self._about_tab(), "About & Help")
         root.addWidget(tabs)
 
         close = QPushButton("Done")
@@ -298,3 +303,55 @@ class SettingsDialog(QDialog):
         self.settings.reveal_on_complete = self._reveal.isChecked()
         self.settings.default_limit = self._default_limit.value()
         self.settings.save()
+
+    # ── About & Help ────────────────────────────────────────────────────────────
+
+    def _about_tab(self) -> QWidget:
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+
+        header = QLabel(f"{APP_NAME}")
+        header.setObjectName("SectionTitle")
+        tagline = QLabel(f"{APP_TAGLINE} · v{__version__}")
+        tagline.setObjectName("Muted")
+        layout.addWidget(header)
+        layout.addWidget(tagline)
+
+        instructions = QLabel(
+            "<b>Getting started</b>"
+            "<ol style='margin-left:-18px;'>"
+            "<li>Create a Telegram app at <b>my.telegram.org</b> to get an API ID and hash.</li>"
+            "<li>Open the <b>Account</b> tab here and paste them in.</li>"
+            "<li>On the <b>Download</b> tab, pick channels and a filter, then press "
+            "<b>Start</b> — you'll be asked for phone, login code, and 2FA the first time.</li>"
+            "<li>Files download to your download folder (change it on the Download tab).</li>"
+            "<li>Use the <b>Organize</b> tab to sort everything into a clean library.</li>"
+            "</ol>"
+            "<b>Note:</b> schematics are downloaded from public Telegram channels and are intended "
+            "for repair and education — please respect copyright."
+        )
+        instructions.setWordWrap(True)
+        instructions.setObjectName("Muted")
+        layout.addWidget(instructions)
+
+        links = QHBoxLayout()
+        for label, url in (
+            ("GitHub repo", REPO_URL),
+            ("Report an issue", f"{REPO_URL}/issues"),
+            ("Telegram API", "https://my.telegram.org"),
+            ("License", f"{REPO_URL}/blob/main/LICENSE"),
+        ):
+            btn = QPushButton(label)
+            btn.clicked.connect(lambda _=False, u=url: QDesktopServices.openUrl(QUrl(u)))
+            links.addWidget(btn)
+        links.addStretch(1)
+        layout.addLayout(links)
+
+        credits = QLabel("Built with Telethon, PySide6 and qasync. © subkoks · MIT License.")
+        credits.setObjectName("Muted")
+        credits.setWordWrap(True)
+        layout.addWidget(credits)
+        layout.addStretch(1)
+        return w

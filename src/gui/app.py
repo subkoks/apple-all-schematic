@@ -43,6 +43,8 @@ def main() -> None:
     if _ICON_FILE.exists():
         app.setWindowIcon(QIcon(str(_ICON_FILE)))
 
+    # Migrate pre-rebrand data first so the loaded settings reflect the old install.
+    paths.migrate_legacy()
     settings = Settings.load()
     paths.apply(settings)
 
