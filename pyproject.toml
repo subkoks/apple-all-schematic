@@ -4,7 +4,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "apple-all-schematic"
-version = "1.0.0"
+version = "2.0.0"
 description = "BoardVault — desktop (macOS) + CLI app to download and organize Apple device schematics and boardviews from public Telegram channels"
 requires-python = ">=3.10"
 license = "MIT"
