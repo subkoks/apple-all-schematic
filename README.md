@@ -131,6 +131,18 @@ The app icon is generated with `./scripts/make_icon.sh` (built-in `sips`/`iconut
 - [docs/architecture.md](docs/architecture.md) — how the app and CLI fit together
 - [docs/decisions/](docs/decisions/) — architecture decision records
 
+## Codex CLI
+
+Codex CLI can use this repo's `AGENTS.md` and `.codex/config.toml` for the same workspace guidance.
+
+Recommended entrypoint:
+
+```bash
+cd ~/Projects/Current/Active/apple-all-schematic
+codex
+> Read AGENTS.md and CLAUDE.md before making changes.
+```
+
 ## Requirements
 
 - macOS (for the app) · Python 3.10+ (for the CLI / building) · a Telegram account · free API
