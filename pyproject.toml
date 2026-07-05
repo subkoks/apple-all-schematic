@@ -1,6 +1,13 @@
 [build-system]
 requires = ["setuptools>=75.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = ["tg_schematic_downloader", "organize_downloads", "validation"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [project]
 name = "apple-all-schematic"
