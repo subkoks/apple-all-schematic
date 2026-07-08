@@ -3,15 +3,15 @@
 tg_schematic_downloader.py — Bulk download Apple schematics from Telegram channels
 """
 
+import argparse
+import asyncio
+import contextlib
+import json
 import os
 import re
 import sys
-import json
-import asyncio
-import argparse
-import contextlib
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -42,6 +42,7 @@ except ImportError:
 # ── Config ─────────────────────────────────────────────────────────────────────
 
 BASE_DIR = Path(__file__).parent.parent
+CONFIG_FILE = BASE_DIR / "args" / "config.json"
 DOWNLOAD_DIR = BASE_DIR / "data" / "downloads"
 STATE_FILE = BASE_DIR / "data" / "state.json"
 SESSION_FILE = BASE_DIR / "data" / "tg_scraper_session"
@@ -177,6 +178,13 @@ CHANNELS = {category: validate_channel_names(names) for category, names in CHANN
 # ── State ──────────────────────────────────────────────────────────────────────
 
 
+def load_config() -> dict:
+    if not CONFIG_FILE.exists():
+        return {}
+    with open(CONFIG_FILE) as f:
+        return json.load(f)
+
+
 def load_state() -> dict:
     if STATE_FILE.exists():
         with open(STATE_FILE) as f:
@@ -184,7 +192,7 @@ def load_state() -> dict:
     return {"downloaded": {}}
 
 
-def save_state(state: dict):
+async def save_state(state: dict) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
@@ -198,6 +206,11 @@ def is_apple(filename: str, caption: str) -> bool:
     if any(kw in text for kw in APPLE_KEYWORDS):
         return True
     return bool(APPLE_PATTERNS.search(text))
+
+
+def normalize_filename(filename: object) -> str | None:
+    sanitized = sanitize_filename(filename)
+    return sanitized.lower() if sanitized is not None else None
 
 
 def get_filename(message) -> str | None:
@@ -322,7 +335,7 @@ async def process_channel(
             )
             downloaded[state_key] = str(dest)
             count += 1
-            save_state(state)
+            await save_state(state)
             emit(
                 {
                     "type": "file_done",
