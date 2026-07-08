@@ -1,0 +1,10 @@
+---
+description: Project-specific Cursor overrides. Extend only — do not duplicate ~/AGENTS.md.
+alwaysApply: true
+---
+
+# Project overrides
+
+Global baseline: `~/AGENTS.md`. Hub: `~/Projects/AGENTS.md` when under `~/Projects/`.
+
+Add project-specific rules below.
