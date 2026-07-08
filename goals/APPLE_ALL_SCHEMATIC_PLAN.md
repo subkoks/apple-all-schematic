@@ -39,14 +39,14 @@ apple-all-schematic/
 
 ```bash
 export TG_API_ID=12345678
-export TG_API_HASH=abcdef1234567890abcdef1234567890
+export TG_API_HASH=<your-api-hash>
 ```
 
 Or create a `.env` file:
 
 ```dotenv
 TG_API_ID=12345678
-TG_API_HASH=abcdef1234567890abcdef1234567890
+TG_API_HASH=<your-api-hash>
 ```
 
 ### 2. Install dependencies
