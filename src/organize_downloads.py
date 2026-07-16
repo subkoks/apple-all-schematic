@@ -143,7 +143,10 @@ BRAND_KEYWORDS: dict[str, list[str]] = {
 # Short brand keywords that need word-boundary regex — checked SECOND
 BRAND_REGEX_PATTERNS: dict[str, re.Pattern[str]] = {
     "HP": re.compile(r"(?<![a-z])hp(?![a-z])", re.IGNORECASE),
-    "MSI": re.compile(r"(?<![a-z])msi(?![a-z])|(?<![a-z])ms-1[67]\d{2}(?![a-z0-9])|(?<![a-z])ms7[0-9]{3}", re.IGNORECASE),
+    "MSI": re.compile(
+        r"(?<![a-z])msi(?![a-z])|(?<![a-z])ms-1[67]\d{2}(?![a-z0-9])|(?<![a-z])ms7[0-9]{3}",
+        re.IGNORECASE,
+    ),
     "LG": re.compile(r"(?<![a-z])lg(?![a-z])", re.IGNORECASE),
 }
 
@@ -171,7 +174,8 @@ ODM_BRAND_REGEX: dict[str, re.Pattern[str]] = {
 }
 
 # Apple non-820 patterns (flex cables, interface boards, doc numbers)
-APPLE_AUX_RE = re.compile(r"(?:821-|051-|920-)\d{4}")  # 821-xxxx flex, 051-xxxx docs, 920-xxxx interface
+# 821-xxxx flex, 051-xxxx docs, 920-xxxx interface
+APPLE_AUX_RE = re.compile(r"(?:821-|051-|920-)\d{4}")
 
 
 # ── Lookup Table Builders ─────────────────────────────────────────────────────
@@ -271,14 +275,18 @@ def classify(
         return "Apple/Other_Apple", "keyword_match"
 
     # Apple MLB/codename patterns (J80G_MLB, K16_MLB, M57-DVT-MLB, Boardview_J80G_MLB)
-    if re.search(r"(?<![a-z0-9])(?:j\d{2,3}[a-z]?|k\d{2}[a-z]?|m\d{2}[a-z]?)[_ -]?(?:mlb|dvt|evt|pvt)", name_lower):
+    if re.search(
+        r"(?<![a-z0-9])(?:j\d{2,3}[a-z]?|k\d{2}[a-z]?|m\d{2}[a-z]?)[_ -]?(?:mlb|dvt|evt|pvt)",
+        name_lower,
+    ):
         return "Apple/Other_Apple", "keyword_match"
     if re.search(r"(?:mlb|boardview)[_ -]?(?:j\d{2,3}|k\d{2}|m\d{2})", name_lower):
         return "Apple/Other_Apple", "keyword_match"
-    if " mlb " in name_lower or "_mlb" in name_lower or "mlb_" in name_lower:
-        # "MLB" alone is ambiguous but combined with other hints
-        if "820" in name_lower or "051" in name_lower:
-            return "Apple/Other_Apple", "keyword_match"
+    # "MLB" alone is ambiguous but combined with other hints
+    if (" mlb " in name_lower or "_mlb" in name_lower or "mlb_" in name_lower) and (
+        "820" in name_lower or "051" in name_lower
+    ):
+        return "Apple/Other_Apple", "keyword_match"
 
     # Step 4a: Named brand detection (substring keywords — high priority)
     for brand, keywords in BRAND_KEYWORDS.items():
@@ -449,10 +457,9 @@ def undo_moves(manifest_path: Path, state_path: Path, state_backup: Path) -> Non
     # Restore state.json from backup
     if state_backup.exists():
         shutil.copy2(str(state_backup), str(state_path))
-        print(f"Restored state.json from backup")
+        print("Restored state.json from backup")
 
     # Clean up empty organized directories
-    organized_dir = Path(moves[0]["dest"]).parent if moves else ORGANIZED_DIR
     _cleanup_empty_dirs(ORGANIZED_DIR)
 
     print(f"Done: {restored} files restored, {errors} errors")

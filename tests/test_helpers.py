@@ -1,19 +1,18 @@
 """Tests for helper functions: is_apple, has_allowed_ext, get_filename, normalize_filename."""
 
-import pytest
-
 # Import from the script by manipulating sys.path
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from tg_schematic_downloader import (
-    is_apple,
     has_allowed_ext,
+    is_apple,
     normalize_filename,
 )
-
 
 # ── is_apple ──────────────────────────────────────────────────────────────────
 

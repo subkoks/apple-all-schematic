@@ -11,7 +11,6 @@ or, without pytest installed:
 
 from __future__ import annotations
 
-import os
 import sys
 import unittest
 from pathlib import Path
@@ -53,9 +52,8 @@ class ValidateChannelNameTests(unittest.TestCase):
 
     def test_rejects_empty(self):
         for value in ["", "   ", "@", " @ "]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_channel_name(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_channel_name(value)
 
     def test_rejects_too_short(self):
         # Telegram usernames must be at least 5 chars.
@@ -80,9 +78,8 @@ class ValidateChannelNameTests(unittest.TestCase):
             "chan/../../evil",
             "@../secret_admin",
         ]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_channel_name(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_channel_name(value)
 
     def test_rejects_null_byte(self):
         with self.assertRaises(ValidationError):
@@ -103,15 +100,13 @@ class ValidateChannelNameTests(unittest.TestCase):
             "chan-name",
             "chan.name",
         ]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_channel_name(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_channel_name(value)
 
     def test_rejects_non_string(self):
         for value in [None, 42, b"bytes", ["list"]]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_channel_name(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_channel_name(value)
 
 
 class ValidateChannelNamesTests(unittest.TestCase):
@@ -143,15 +138,13 @@ class ValidateExtensionTests(unittest.TestCase):
 
     def test_rejects_empty(self):
         for value in ["", "   ", "."]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_extension(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_extension(value)
 
     def test_rejects_path_traversal(self):
         for value in ["./../etc", ".pdf/foo", ".pd\\f"]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_extension(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_extension(value)
 
     def test_rejects_null_byte(self):
         with self.assertRaises(ValidationError):
@@ -163,9 +156,8 @@ class ValidateExtensionTests(unittest.TestCase):
 
     def test_rejects_special_chars(self):
         for value in [".pd-f", ".pd f", ".pd.f", ".pd;rm"]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_extension(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_extension(value)
 
     def test_rejects_non_string(self):
         with self.assertRaises(ValidationError):
@@ -197,9 +189,8 @@ class ValidateKeywordTests(unittest.TestCase):
 
     def test_rejects_empty(self):
         for value in ["", "   ", "\t  \n"]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_keyword(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_keyword(value)
 
     def test_rejects_null_byte(self):
         with self.assertRaises(ValidationError):
@@ -207,9 +198,8 @@ class ValidateKeywordTests(unittest.TestCase):
 
     def test_rejects_control_characters(self):
         for value in ["iph\none", "iph\rone", "iph\x1bone"]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_keyword(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_keyword(value)
 
     def test_rejects_too_long(self):
         with self.assertRaises(ValidationError):
@@ -217,9 +207,8 @@ class ValidateKeywordTests(unittest.TestCase):
 
     def test_rejects_non_string(self):
         for value in [None, 42, [".pdf"], {"kw": 1}]:
-            with self.subTest(value=value):
-                with self.assertRaises(ValidationError):
-                    validate_keyword(value)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                validate_keyword(value)
 
 
 class ValidateKeywordsTests(unittest.TestCase):

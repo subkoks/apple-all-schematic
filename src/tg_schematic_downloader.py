@@ -34,7 +34,6 @@ load_dotenv()
 try:
     from telethon import TelegramClient
     from telethon.tl.types import MessageMediaDocument
-    from tqdm import tqdm
 except ImportError:
     print("Missing deps: pip install telethon tqdm python-dotenv")
     sys.exit(1)
@@ -139,7 +138,8 @@ APPLE_KEYWORDS = [
 APPLE_PATTERNS = re.compile(
     r"(?<![a-z0-9])a[123]\d{3}(?![a-z0-9])"  # A1278, A2141, A3113 etc.
     r"|(?<![a-z0-9])emc\s*\d{4}(?![a-z0-9])"  # EMC 2835, EMC3178 etc.
-    r"|(?<![a-z0-9])(?:n61|n71|d10|d20|d22|d16|d63|d73|d83|d93)(?![a-z0-9])",  # short iPhone codenames
+    # short iPhone codenames
+    r"|(?<![a-z0-9])(?:n61|n71|d10|d20|d22|d16|d63|d73|d83|d93)(?![a-z0-9])",
     re.IGNORECASE,
 )
 
@@ -293,9 +293,8 @@ async def process_channel(
             continue
 
         # Apple-only channels: download everything, no keyword filter needed
-        if apple_only and channel not in APPLE_ONLY_CHANNELS:
-            if not is_apple(filename, caption):
-                continue
+        if apple_only and channel not in APPLE_ONLY_CHANNELS and not is_apple(filename, caption):
+            continue
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()

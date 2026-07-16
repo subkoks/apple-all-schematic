@@ -1,12 +1,12 @@
 """Tests for state management: load_state, save_state."""
 
-import json
 import asyncio
-import pytest
+import json
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
-import sys
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
