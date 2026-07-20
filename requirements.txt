@@ -21,7 +21,7 @@ telethon==1.44.0 \
     --hash=sha256:52fc49efb67a4916c2aedcb295ad286f4afa2aba9bf15d83ed2acdc64af0c718 \
     --hash=sha256:7de1473e9e412e20bd57b102d8f50d48372712462be9ff6c003bb81c50ad7e98
     # via apple-all-schematic (pyproject.toml)
-tqdm==4.68.4 \
-    --hash=sha256:19829c9673638f2a0b8617da4cdcb927e831cd88bcfcb6e78d42a4d1af131520 \
-    --hash=sha256:5168118b2368f48c561afda8020fd79195b1bdb0bdf8086b88442c267a315dc2
+tqdm==4.69.0 \
+    --hash=sha256:700c5e85dcd5f009dd6222588a29180a193a748247a5d855b4d67db93d79a53b \
+    --hash=sha256:9979978912be667a6ef21fd5d8abf54e324e63d82f7f43c360792ebc2bc4e622
     # via apple-all-schematic (pyproject.toml)
