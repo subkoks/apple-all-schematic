@@ -8,6 +8,6 @@ let package = Package(
     targets: [
         .target(name: "BoardVaultCore"),
         .executableTarget(name: "BoardVault", dependencies: ["BoardVaultCore"]),
-        .testTarget(name: "BoardVaultCoreTests", dependencies: ["BoardVaultCore"])
+        .testTarget(name: "BoardVaultCoreTests", dependencies: ["BoardVaultCore", "BoardVault"])
     ]
 )
