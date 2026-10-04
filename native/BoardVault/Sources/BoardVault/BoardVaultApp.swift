@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        model?.savePreferences()
         guard let model, model.running else { return .terminateNow }
         model.stop()
         Task { @MainActor in
@@ -70,7 +71,7 @@ struct MainView: View {
                     }.padding().background(.regularMaterial)
                 }
                 switch model.section {
-                case "Settings": InitialSettingsView(model: model)
+                case "Settings": SettingsView(model: model)
                 case "Organize": OrganizeView(model: model)
                 case "Library": Text("Library").frame(maxWidth: .infinity, maxHeight: .infinity)
                 default: DownloadView(model: model)
@@ -90,14 +91,3 @@ struct MainView: View {
     }
 }
 
-struct InitialSettingsView: View {
-    @ObservedObject var model: AppModel
-    var body: some View {
-        Form {
-            TextField("API ID", text: $model.apiID)
-            SecureField("API hash", text: $model.apiHash)
-            Text("Credentials are used only when you start a Telegram operation.").foregroundStyle(.secondary)
-            Button("Log in") { model.start("login") }
-        }.formStyle(.grouped).disabled(model.running)
-    }
-}

@@ -56,6 +56,8 @@ public actor EngineClient {
     private var receivedDone = false
     private var failedProtocol = false
     private var generation = UUID()
+    private var exitStatus: Int32?
+    private var outputEnded = false
 
     public init() {}
 
@@ -82,6 +84,11 @@ public actor EngineClient {
         failedProtocol = false
         generation = UUID()
         let runID = generation
+        exitStatus = nil
+        outputEnded = false
+        child.terminationHandler = { [weak self] child in
+            Task { await self?.recordExit(child.terminationStatus, runID: runID) }
+        }
         do { try child.run() } catch {
             continuation?.finish()
             continuation = nil
@@ -101,8 +108,7 @@ public actor EngineClient {
                 await ingest(chunk, runID: runID)
             }
             try? stdout.fileHandleForReading.close()
-            child.waitUntilExit()
-            await exited(child.terminationStatus, runID: runID)
+            await endedOutput(runID: runID)
         }
         continuation?.onTermination = { [weak self] _ in
             Task { await self?.cancel(runID: runID) }
@@ -135,7 +141,20 @@ public actor EngineClient {
         process?.terminate()
     }
 
-    private func exited(_ status: Int32, runID: UUID) {
+    private func recordExit(_ status: Int32, runID: UUID) {
+        guard runID == generation else { return }
+        exitStatus = status
+        finishIfReady(runID: runID)
+    }
+
+    private func endedOutput(runID: UUID) {
+        guard runID == generation else { return }
+        outputEnded = true
+        finishIfReady(runID: runID)
+    }
+
+    private func finishIfReady(runID: UUID) {
+        guard outputEnded, let status = exitStatus else { return }
         guard runID == generation else { return }
         if status != 0 || !receivedDone || !buffer.isEmpty {
             continuation?.yield(EngineEvent(type: "error", message: "Engine exited unexpectedly (\(status))."))

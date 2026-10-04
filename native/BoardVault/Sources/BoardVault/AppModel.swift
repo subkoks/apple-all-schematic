@@ -60,6 +60,7 @@ final class AppModel: ObservableObject {
     @Published var moves: [OrganizeMove] = []
     @Published var planID: String?
     @Published var revealOnComplete = false
+    @Published var notifications = false
     let engine = EngineClient()
     let dataRoot: URL
     let repo: URL
@@ -79,6 +80,7 @@ final class AppModel: ObservableObject {
             downloadFolder = dataRoot.appendingPathComponent("downloads").path
         }
         loadChannels()
+        loadPreferences()
     }
 
     func loadChannels() {
@@ -144,6 +146,7 @@ final class AppModel: ObservableObject {
         if operation == "organize", planID == nil { return }
         if operation == "scan" { moves = []; planID = nil }
         error = nil
+        savePreferences()
         running = true
         status = operation.capitalized + " in progress…"
         started = Date()
@@ -151,7 +154,7 @@ final class AppModel: ObservableObject {
         speed = 0
         if operation == "download" { transfers = channels.filter(\.selected).map { Transfer(channel: $0.name) } }
         task = Task {
-            defer { running = false; loginField = nil; updateDock(active: false) }
+            defer { running = false; loginField = nil; apiID = ""; apiHash = ""; updateDock(active: false) }
             do {
                 let (executable, prefix) = try location()
                 var arguments = prefix + ["--json", "--operation", operation, "--data-dir", dataRoot.path,
@@ -166,8 +169,14 @@ final class AppModel: ObservableObject {
                     }
                     arguments += ["--channels"] + channels.filter(\.selected).map(\.name)
                 }
+                var environment: [String: String] = [:]
+                if ["download", "login", "logout"].contains(operation) {
+                    let credentials = apiID.isEmpty && apiHash.isEmpty
+                        ? try KeychainCredentials().load() : try Credentials(apiID: apiID, apiHash: apiHash)
+                    environment = credentials.environment
+                }
                 let stream = try await engine.start(executable: executable, arguments: arguments,
-                    environment: ["TG_API_ID": apiID, "TG_API_HASH": apiHash])
+                    environment: environment)
                 for await event in stream { handle(event, operation: operation) }
                 if error != nil { status = "Operation failed" }
             } catch {
@@ -209,6 +218,7 @@ final class AppModel: ObservableObject {
         if event.type == "done" {
             if operation == "organize" || operation == "undo" { planID = nil; moves = [] }
             status = event.status == "ok" ? "Completed" : event.status == "cancelled" ? "Stopped" : "Operation failed"
+            if event.status == "ok", operation == "download" { notifyCompletion() }
             if event.status == "ok", operation == "download", revealOnComplete {
                 NSWorkspace.shared.open(URL(fileURLWithPath: downloadFolder))
             }
