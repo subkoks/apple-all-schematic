@@ -73,7 +73,7 @@ struct MainView: View {
                 switch model.section {
                 case "Settings": SettingsView(model: model)
                 case "Organize": OrganizeView(model: model)
-                case "Library": Text("Library").frame(maxWidth: .infinity, maxHeight: .infinity)
+                case "Library": LibraryView(model: model)
                 default: DownloadView(model: model)
                 }
                 HStack {
