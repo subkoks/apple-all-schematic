@@ -141,6 +141,8 @@ final class AppModel: ObservableObject {
     func start(_ operation: String = "download") {
         guard !running else { return }
         guard operation != "download" || canStart else { return }
+        if operation == "organize", planID == nil { return }
+        if operation == "scan" { moves = []; planID = nil }
         error = nil
         running = true
         status = operation.capitalized + " in progress…"
@@ -154,6 +156,7 @@ final class AppModel: ObservableObject {
                 let (executable, prefix) = try location()
                 var arguments = prefix + ["--json", "--operation", operation, "--data-dir", dataRoot.path,
                     "--download-dir", downloadFolder, "--organized-dir", organizedFolder]
+                if operation == "organize", let planID { arguments += ["--plan-id", planID] }
                 if operation == "download" {
                     arguments += ["--limit", String(max(0, min(limit, Layout.maxMessages)))]
                     if appleOnly { arguments.append("--apple") }
@@ -175,6 +178,7 @@ final class AppModel: ObservableObject {
     }
 
     func handle(_ event: EngineEvent, operation: String) {
+        if event.type == "plan" { moves += event.moves ?? []; planID = event.planID }
         if event.type == "error" { error = event.message ?? "Engine operation failed." }
         if event.type == "login_required" { loginField = event.field }
         if let channel = event.channel, let index = transfers.firstIndex(where: { $0.channel == channel }) {
@@ -203,6 +207,7 @@ final class AppModel: ObservableObject {
             if logs.count > Layout.maxLogEntries { logs.removeFirst(logs.count - Layout.maxLogEntries) }
         }
         if event.type == "done" {
+            if operation == "organize" || operation == "undo" { planID = nil; moves = [] }
             status = event.status == "ok" ? "Completed" : event.status == "cancelled" ? "Stopped" : "Operation failed"
             if event.status == "ok", operation == "download", revealOnComplete {
                 NSWorkspace.shared.open(URL(fileURLWithPath: downloadFolder))

@@ -441,6 +441,7 @@ def parse_args():
     p.add_argument("--json", action="store_true", help="JSON-lines sidecar protocol")
     p.add_argument("--operation", default="download",
                    choices=("download", "login", "logout", "config", "scan", "organize", "undo"))
+    p.add_argument("--plan-id", help="Machine-mode exact preview identifier")
     p.add_argument("--data-dir", type=Path, help="Machine-mode state/session directory")
     p.add_argument("--download-dir", type=Path, help="Machine-mode download directory")
     p.add_argument("--organized-dir", type=Path, help="Machine-mode library directory")

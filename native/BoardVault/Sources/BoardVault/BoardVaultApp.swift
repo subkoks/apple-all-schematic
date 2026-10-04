@@ -71,7 +71,7 @@ struct MainView: View {
                 }
                 switch model.section {
                 case "Settings": InitialSettingsView(model: model)
-                case "Organize": Text("Organize").frame(maxWidth: .infinity, maxHeight: .infinity)
+                case "Organize": OrganizeView(model: model)
                 case "Library": Text("Library").frame(maxWidth: .infinity, maxHeight: .infinity)
                 default: DownloadView(model: model)
                 }
