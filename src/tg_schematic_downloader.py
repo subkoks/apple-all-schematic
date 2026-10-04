@@ -29,7 +29,8 @@ for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, "reconfigure"):
         _stream.reconfigure(line_buffering=True)
 
-load_dotenv()
+if "--json" not in sys.argv:
+    load_dotenv()
 
 try:
     from telethon import TelegramClient
@@ -437,6 +438,12 @@ async def main(args):
 
 def parse_args():
     p = argparse.ArgumentParser(description="Telegram Apple schematic downloader")
+    p.add_argument("--json", action="store_true", help="JSON-lines sidecar protocol")
+    p.add_argument("--operation", default="download",
+                   choices=("download", "login", "logout", "config", "scan", "organize", "undo"))
+    p.add_argument("--data-dir", type=Path, help="Machine-mode state/session directory")
+    p.add_argument("--download-dir", type=Path, help="Machine-mode download directory")
+    p.add_argument("--organized-dir", type=Path, help="Machine-mode library directory")
     p.add_argument(
         "--apple", action="store_true", help="Download all Apple files (uses keyword filter)"
     )
@@ -462,4 +469,9 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    asyncio.run(main(parse_args()))
+    arguments = parse_args()
+    if arguments.json:
+        from native_engine import run
+
+        sys.exit(run(arguments))
+    asyncio.run(main(arguments))
