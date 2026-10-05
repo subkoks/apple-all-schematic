@@ -127,3 +127,86 @@ async def test_cancel_pending_work(tmp_path, monkeypatch):
     reader.feed_data(b'{"command":"cancel"}\n')
     await asyncio.wait_for(engine.serve(options(tmp_path), protocol, reader), timeout=1)
     assert events(protocol)[-1]["status"] == "cancelled"
+
+
+async def test_download_progress_resume_and_collision(tmp_path, monkeypatch):
+    monkeypatch.setenv("TG_API_ID", "12345")
+    monkeypatch.setenv("TG_API_HASH", "fixture-only")
+    monkeypatch.setattr(engine.scraper, "get_filename", lambda message: "iphone.pdf")
+    message = SimpleNamespace(
+        id=1, message="", media=SimpleNamespace(document=SimpleNamespace(size=4))
+    )
+
+    class FakeClient:
+        calls = 0
+
+        async def connect(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+        async def is_user_authorized(self):
+            return True
+
+        async def get_entity(self, channel):
+            return channel
+
+        async def iter_messages(self, entity, **kwargs):
+            yield message
+
+        async def download_media(self, message, file, progress_callback):
+            self.calls += 1
+            Path(file).write_bytes(b"test")
+            progress_callback(2, 4)
+            progress_callback(4, 4)
+
+    client = FakeClient()
+    protocol = engine.Protocol(io.StringIO())
+    args = options(tmp_path)
+    folder = args.download_dir / "testchannel"
+    folder.mkdir(parents=True)
+    (folder / "iphone.pdf").write_bytes(b"original")
+    (folder / "iphone_1.pdf").write_bytes(b"previous")
+    await engine.operation(args, protocol, lambda *args: client)
+    assert client.calls == 1
+    assert (folder / "iphone.pdf").read_bytes() == b"original"
+    assert (folder / "iphone_1.pdf").read_bytes() == b"previous"
+    state = json.loads((tmp_path / "state.json").read_text())
+    assert Path(state["downloaded"]["testchannel:1"]).read_bytes() == b"test"
+    assert {event["type"] for event in events(protocol)} >= {
+        "channel_start",
+        "progress",
+        "file_done",
+        "channel_done",
+    }
+    await engine.operation(args, protocol, lambda *args: client)
+    assert client.calls == 1
+    assert not list(folder.glob("*.part"))
+
+
+async def test_partial_download_never_enters_state(tmp_path, monkeypatch):
+    monkeypatch.setattr(engine.scraper, "DOWNLOAD_DIR", tmp_path)
+    monkeypatch.setattr(engine.scraper, "get_filename", lambda message: "iphone.pdf")
+    message = SimpleNamespace(
+        id=1, message="", media=SimpleNamespace(document=SimpleNamespace(size=100))
+    )
+
+    async def messages(*args, **kwargs):
+        yield message
+
+    async def partial(message, file, progress_callback):
+        Path(file).write_bytes(b"short")
+
+    client = SimpleNamespace(
+        get_entity=AsyncMock(return_value="fixture"), iter_messages=messages, download_media=partial
+    )
+    state = {"downloaded": {}}
+    protocol = engine.Protocol(io.StringIO())
+    await engine.scraper.process_channel(
+        client, "testchannel", state, True, None, 1, True, protocol.progress, safe_files=True
+    )
+    assert state == {"downloaded": {}}
+    assert protocol.had_errors
+    assert not list(tmp_path.rglob("*.pdf"))
+    assert not list(tmp_path.rglob("*.part"))

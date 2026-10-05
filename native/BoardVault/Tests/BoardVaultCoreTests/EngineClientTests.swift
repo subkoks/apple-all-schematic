@@ -48,6 +48,12 @@ final class EngineClientTests: XCTestCase {
         XCTAssertEqual(types, ["login_required", "done"])
     }
 
+    func testMalformedEngineIgnoringTerminationIsKilled() async throws {
+        let events = try await run("import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('broken', flush=True); time.sleep(30)")
+        XCTAssertEqual(events.first?.message, "Invalid engine response.")
+        XCTAssertEqual(events.last?.type, "error")
+    }
+
     func testCancellationFallback() async throws {
         let client = EngineClient()
         let stream = try await client.start(executable: URL(fileURLWithPath: "/usr/bin/python3"), arguments: ["-u", "-c", "import time; time.sleep(30)"])

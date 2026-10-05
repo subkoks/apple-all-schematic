@@ -27,6 +27,7 @@ struct BoardVaultApp: App {
         Window("BoardVault", id: "main") {
             MainView(model: model)
                 .onAppear { delegate.model = model }
+                .task { await model.runSmokeCheck() }
                 .preferredColorScheme(model.theme == "dark" ? .dark : model.theme == "light" ? .light : nil)
         }
         .defaultSize(width: Layout.windowWidth, height: Layout.windowHeight)

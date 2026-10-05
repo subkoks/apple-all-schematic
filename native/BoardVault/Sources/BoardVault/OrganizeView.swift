@@ -3,7 +3,8 @@ import BoardVaultCore
 
 struct OrganizeView: View {
     @ObservedObject var model: AppModel
-    @State private var confirmation: String?
+    @State private var confirmation = "organize"
+    @State private var showingConfirmation = false
     private var categories: [(String, Int)] {
         Dictionary(grouping: model.moves, by: \.category).map { ($0.key, $0.value.count) }.sorted { $0.0 < $1.0 }
     }
@@ -13,9 +14,9 @@ struct OrganizeView: View {
             Text("Preview the changes, organize your files, or undo the last batch.").foregroundStyle(.secondary)
             HStack {
                 Button("Scan (dry-run)") { model.start("scan") }.disabled(model.running)
-                Button("Organize \(model.moves.count) files") { confirmation = "organize" }
+                Button("Organize \(model.moves.count) files") { confirmation = "organize"; showingConfirmation = true }
                     .buttonStyle(.borderedProminent).disabled(model.running || model.planID == nil || model.moves.isEmpty)
-                Button("Undo last batch") { confirmation = "undo" }.disabled(model.running)
+                Button("Undo last batch") { confirmation = "undo"; showingConfirmation = true }.disabled(model.running)
                 Spacer()
             }
             if model.moves.isEmpty {
@@ -36,12 +37,11 @@ struct OrganizeView: View {
             }
         }.padding(Layout.inset)
         .confirmationDialog(confirmation == "undo" ? "Undo the last organization?" : "Move the previewed files?",
-            isPresented: Binding(get: { confirmation != nil }, set: { if !$0 { confirmation = nil } }), titleVisibility: .visible) {
+            isPresented: $showingConfirmation, titleVisibility: .visible) {
                 Button(confirmation == "undo" ? "Undo" : "Organize") {
-                    if let operation = confirmation { model.start(operation) }
-                    confirmation = nil
+                    model.start(confirmation)
                 }
-                Button("Cancel", role: .cancel) { confirmation = nil }
+                Button("Cancel", role: .cancel) {}
             } message: { Text("Existing files are preserved. Changed previews must be scanned again.") }
     }
 }

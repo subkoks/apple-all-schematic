@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 
 from telethon.errors import SessionPasswordNeededError
@@ -20,6 +21,7 @@ PROTOCOL_VERSION = 1
 MAX_COMMAND_BYTES = 16_384
 MAX_LOGIN_LENGTH = 4_096
 MAX_MESSAGE_LIMIT = 1_000_000
+PROGRESS_INTERVAL_SECONDS = 0.1
 
 
 class Protocol:
@@ -29,6 +31,7 @@ class Protocol:
         self.cancelled = asyncio.Event()
         self.pending: str | None = None
         self.had_errors = False
+        self.last_progress: dict[str, float] = {}
 
     def emit(self, event_type: str, **fields):
         if event_type == "error":
@@ -88,6 +91,14 @@ class Protocol:
             self.emit("error", channel=event["channel"], message="Channel or file download failed.")
             return
         if kind == "file_bytes":
+            now = time.monotonic()
+            channel = event["channel"]
+            if (
+                event["received"] != event["total"]
+                and now - self.last_progress.get(channel, 0) < PROGRESS_INTERVAL_SECONDS
+            ):
+                return
+            self.last_progress[channel] = now
             self.emit(
                 "progress",
                 channel=event["channel"],
@@ -168,6 +179,7 @@ async def operation(args, protocol: Protocol, client_factory=None):
                     args.limit,
                     args.resume,
                     protocol.progress,
+                    safe_files=True,
                 )
         finally:
             await client.disconnect()

@@ -138,7 +138,7 @@ public actor EngineClient {
         guard runID == generation, !failedProtocol else { return }
         failedProtocol = true
         continuation?.yield(EngineEvent(type: "error", message: "Invalid engine response."))
-        process?.terminate()
+        terminate(runID: runID)
     }
 
     private func recordExit(_ status: Int32, runID: UUID) {

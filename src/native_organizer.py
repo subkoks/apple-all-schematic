@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 import shutil
+import sys
 import tempfile
 import uuid
 from pathlib import Path
@@ -48,8 +49,11 @@ def read_json(path: Path, default):
 
 
 def scan(download: Path, library: Path):
-    board = organizer.build_board_lookup(organizer.REFERENCE_FILE)
-    models = organizer.build_model_lookup(organizer.REFERENCE_FILE)
+    reference = (
+        Path(getattr(sys, "_MEIPASS", organizer.BASE_DIR)) / "context/APPLE_PRODUCT_REFERENCE.md"
+    )
+    board = organizer.build_board_lookup(reference)
+    models = organizer.build_model_lookup(reference)
     moves = []
     reserved = set()
     for src in organizer.scan_files(download):

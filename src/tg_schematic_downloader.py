@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
@@ -250,6 +251,8 @@ async def process_channel(
     limit: int | None,
     resume: bool,
     progress: Callable[[dict], None] | None = None,
+    *,
+    safe_files: bool = False,
 ):
     # Optional structured-event sink for GUI/embedding. When None, behaviour is
     # identical to the CLI (print-only). Sink errors never leak into the loop.
@@ -264,6 +267,10 @@ async def process_channel(
     emit({"type": "channel_start", "channel": channel})
 
     out_dir = DOWNLOAD_DIR / channel
+    if safe_files and (
+        out_dir.is_symlink() or not out_dir.resolve().is_relative_to(DOWNLOAD_DIR.resolve())
+    ):
+        raise ValueError("Unsafe download directory")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     downloaded = state["downloaded"]
@@ -310,6 +317,15 @@ async def process_channel(
             suffix = dest.suffix
             dest = out_dir / f"{stem}_{message.id}{suffix}"
 
+        if safe_files:
+            counter = 0
+            while dest.exists() or dest.is_symlink():
+                counter += 1
+                dest = (
+                    out_dir / f"{Path(filename).stem}_{message.id}_{counter}{Path(filename).suffix}"
+                )
+
+        temporary = None
         try:
             print(f"  ↓ {filename}")
             emit({"type": "file_start", "channel": channel, "filename": filename})
@@ -328,14 +344,30 @@ async def process_channel(
                         }
                     )
 
+            if safe_files:
+                fd, name = tempfile.mkstemp(prefix=".boardvault-", suffix=".part", dir=out_dir)
+                os.close(fd)
+                temporary = Path(name)
             await client.download_media(
                 message,
-                file=str(dest),
+                file=str(temporary or dest),
                 progress_callback=byte_cb,
             )
+            if temporary is not None:
+                document = getattr(getattr(message, "media", None), "document", None)
+                expected = getattr(document, "size", None)
+                if expected is not None and temporary.stat().st_size != expected:
+                    raise ValueError("Incomplete download")
+                # Same-directory hard link publishes atomically without overwriting.
+                os.link(temporary, dest)
             downloaded[state_key] = str(dest)
             count += 1
-            await save_state(state)
+            if safe_files:
+                from native_organizer import atomic_json
+
+                atomic_json(STATE_FILE, state)
+            else:
+                await save_state(state)
             emit(
                 {
                     "type": "file_done",
@@ -356,6 +388,9 @@ async def process_channel(
                     "error": str(e),
                 }
             )
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     print(f"  Done — {count} downloaded, {skipped} skipped, {errors} errors")
     emit(
@@ -439,8 +474,11 @@ async def main(args):
 def parse_args():
     p = argparse.ArgumentParser(description="Telegram Apple schematic downloader")
     p.add_argument("--json", action="store_true", help="JSON-lines sidecar protocol")
-    p.add_argument("--operation", default="download",
-                   choices=("download", "login", "logout", "config", "scan", "organize", "undo"))
+    p.add_argument(
+        "--operation",
+        default="download",
+        choices=("download", "login", "logout", "config", "scan", "organize", "undo"),
+    )
     p.add_argument("--plan-id", help="Machine-mode exact preview identifier")
     p.add_argument("--data-dir", type=Path, help="Machine-mode state/session directory")
     p.add_argument("--download-dir", type=Path, help="Machine-mode download directory")

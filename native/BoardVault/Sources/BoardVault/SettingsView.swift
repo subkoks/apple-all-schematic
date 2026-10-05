@@ -69,6 +69,7 @@ struct SettingsView: View {
 }
 
 extension AppModel {
+    private static let maximumLegacyFileBytes = 65_536
     func saveCredentials() {
         do {
             try KeychainCredentials().save(Credentials(apiID: apiID, apiHash: apiHash))
@@ -85,7 +86,7 @@ extension AppModel {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-            guard size <= 65_536 else { throw CredentialError.invalid }
+            guard size <= Self.maximumLegacyFileBytes else { throw CredentialError.invalid }
             let credentials = try Credentials.legacy(contents: String(contentsOf: url, encoding: .utf8))
             try KeychainCredentials().save(credentials)
             status = "Legacy credentials imported into Keychain"
@@ -103,6 +104,7 @@ extension AppModel {
         savePreferences()
     }
     func savePreferences() {
+        guard ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] == nil else { return }
         let preferences: [String: Any] = ["downloadFolder": downloadFolder, "organizedFolder": organizedFolder,
             "theme": theme, "appleOnly": appleOnly, "resume": resume, "limit": limit,
             "reveal": revealOnComplete, "notifications": notifications]

@@ -39,6 +39,7 @@ enum Layout {
 
 @MainActor
 final class AppModel: ObservableObject {
+    private static let sourceParentLevels = 5
     @Published var section: String? = "Download"
     @Published var channels: [Channel] = []
     @Published var appleOnly = true
@@ -65,12 +66,13 @@ final class AppModel: ObservableObject {
     let dataRoot: URL
     let repo: URL
     var task: Task<Void, Never>?
+    private var activeOperation = ""
     private var started = Date()
     private var transferred: Int64 = 0
 
     init() {
         var source = URL(fileURLWithPath: #filePath)
-        for _ in 0..<5 { source.deleteLastPathComponent() }
+        for _ in 0..<Self.sourceParentLevels { source.deleteLastPathComponent() }
         repo = ProcessInfo.processInfo.environment["BOARDVAULT_REPO"].map { URL(fileURLWithPath: $0) } ?? source
         dataRoot = ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"].map { URL(fileURLWithPath: $0) }
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/subkoks/BoardVault")
@@ -79,8 +81,12 @@ final class AppModel: ObservableObject {
         if ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] != nil {
             downloadFolder = dataRoot.appendingPathComponent("downloads").path
         }
-        loadChannels()
-        loadPreferences()
+        if ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] != nil {
+            channels = [Channel(name: "fixturechannel", category: "apple")]
+        } else {
+            loadChannels()
+            loadPreferences()
+        }
     }
 
     func loadChannels() {
@@ -149,6 +155,7 @@ final class AppModel: ObservableObject {
         savePreferences()
         running = true
         status = operation.capitalized + " in progress…"
+        activeOperation = operation
         started = Date()
         transferred = 0
         speed = 0
@@ -179,6 +186,10 @@ final class AppModel: ObservableObject {
                     environment: environment)
                 for await event in stream { handle(event, operation: operation) }
                 if error != nil { status = "Operation failed" }
+                if error == nil, status == "Completed", operation == "download" {
+                    notifyCompletion()
+                    if revealOnComplete { NSWorkspace.shared.open(URL(fileURLWithPath: downloadFolder)) }
+                }
             } catch {
                 self.error = "Unable to run the engine. Check the installation and Settings."
                 status = "Operation failed"
@@ -218,10 +229,6 @@ final class AppModel: ObservableObject {
         if event.type == "done" {
             if operation == "organize" || operation == "undo" { planID = nil; moves = [] }
             status = event.status == "ok" ? "Completed" : event.status == "cancelled" ? "Stopped" : "Operation failed"
-            if event.status == "ok", operation == "download" { notifyCompletion() }
-            if event.status == "ok", operation == "download", revealOnComplete {
-                NSWorkspace.shared.open(URL(fileURLWithPath: downloadFolder))
-            }
         }
         updateDock(active: event.type != "done")
     }
@@ -237,10 +244,13 @@ final class AppModel: ObservableObject {
     }
 
     func updateDock(active: Bool) {
-        guard let app = NSApp else { return }
-        let tile = app.dockTile
-        guard active, running, !transfers.isEmpty else { tile.badgeLabel = nil; return }
+        guard active, running, activeOperation == "download", !transfers.isEmpty else {
+            DockProgress.update(fraction: nil, label: nil)
+            return
+        }
         let completed = transfers.filter(\.finished).count
-        tile.badgeLabel = "\(completed)/\(transfers.count)"
+        let partial = transfers.filter { !$0.finished }.reduce(0.0) { $0 + $1.fraction }
+        DockProgress.update(fraction: (Double(completed) + partial) / Double(transfers.count),
+                            label: "\(completed)/\(transfers.count)")
     }
 }
