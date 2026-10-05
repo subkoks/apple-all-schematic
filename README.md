@@ -6,6 +6,9 @@ originals, no watermarks.
 
 ![BoardVault — dark](docs/images/screenshot-dark.png)
 
+The screenshots above and below show the retained Qt interface. The native interface and its
+release candidate are described in the [native guide](docs/NATIVE_USER_GUIDE.md).
+
 <details>
 <summary>Light theme</summary>
 
@@ -20,7 +23,7 @@ BoardVault exposes the Python Telegram engine through three front-ends:
 - **Existing desktop app (macOS):** a PySide6 GUI — pick channels, filter, watch live per-channel
   progress, then sort everything into a tidy `Apple/<product>` and `<brand>` library. System/Dark/Light
   themes, guided Telegram login (no terminal), and a configurable download folder.
-- **Native preview (macOS 13+, Intel):** SwiftUI + AppKit, with a separate Python sidecar.
+- **Native app candidate (2.1.0-rc.1, macOS 13+, Intel):** SwiftUI + AppKit, with a separate Python sidecar.
   Download, Organize, Library, Keychain settings, keyboard commands, Dock progress, and notifications.
 - **CLI:** the original single-file scraper for power users, automation, and headless/cloud runs.
 
@@ -30,20 +33,28 @@ BoardVault clients before accessing shared state. No sessions are copied automat
 
 ---
 
-## Install (macOS app)
+## Install (macOS apps)
+
+**Native candidate:** use the versioned native ZIP or DMG from a verified candidate release.
+Unzip or mount it and drag BoardVault.app into Applications. The local preparation command is
+`./scripts/build_native_app.sh`; release assets and hashes are written to
+`dist/releases/2.1.0-rc.1-x86_64/`. See the [native guide](docs/NATIVE_USER_GUIDE.md) and
+[candidate release notes](docs/releases/2.1.0-rc.1.md). Publication is tracked separately from
+local preparation; a candidate is not a claim of final platform acceptance.
+
+**Qt app (2.0.0):**
 
 1. Download or build `BoardVault.dmg` (see **Build from source** below), open it, and drag
    **BoardVault** into **Applications**.
-2. The app is **unsigned**, so on first launch macOS Gatekeeper will block it. Open it once via
-   either:
-   - **Right-click** BoardVault in Applications → **Open** → **Open**, or
-   - Terminal: `xattr -dr com.apple.quarantine "/Applications/BoardVault.app"`
+2. The app is **unsigned**. If macOS blocks a trusted download, use System Settings → Privacy &
+   Security → **Open Anyway** after attempting to open it, following
+   [Apple's instructions](https://support.apple.com/en-us/102445).
 3. After the first open it launches normally.
 
 > BoardVault stores its data in `~/Library/Application Support/subkoks/BoardVault/` and downloads to
 > `~/Downloads/BoardVault/` by default (changeable in-app).
 
-## Using the app
+## Using the Qt app
 
 1. **Get Telegram API credentials** (free, ~2 min) at **<https://my.telegram.org>** → *API
    development tools* → note your **API ID** and **API Hash**.
@@ -125,7 +136,7 @@ The app icon is generated with `./scripts/make_icon.sh` (built-in `sips`/`iconut
 See [additional channel sources](docs/channel-sources.md) for 10 optional native additions,
 coverage examples, and the distinction between current public previews and archived evidence.
 
-## Native SwiftUI preview
+## Native SwiftUI app
 
 The existing PySide6 GUI and its packaging scripts remain unchanged. The native source is in
 `native/BoardVault/` with no third-party Swift dependencies. It targets macOS 13 and Intel x86_64;
@@ -133,11 +144,11 @@ actual execution has been checked on this Intel Tahoe Mac, not on a separate Ven
 
 ```bash
 # Development (uses the repo .venv Python sidecar; create it with uv venv if absent)
-uv pip install --python .venv/bin/python '.[dev]'
+uv pip install --python .venv/bin/python -e '.[dev]'
 swift run --package-path native/BoardVault BoardVault
 
 # Native tests, without loading .env or accessing Telegram
-(cd tests && PYTHON_DOTENV_DISABLED=1 ../.venv/bin/python -m pytest -q -c ../pyproject.toml --rootdir=. --confcutdir=. .)
+(cd tests && PYTHONPATH=../src PYTHON_DOTENV_DISABLED=1 ../.venv/bin/python -m pytest -q -c ../pyproject.toml --rootdir=. --confcutdir=. .)
 swift test --package-path native/BoardVault --arch x86_64
 
 # Build a separate native app and DMG

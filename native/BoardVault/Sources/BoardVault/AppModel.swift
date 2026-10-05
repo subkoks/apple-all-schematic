@@ -20,7 +20,10 @@ struct Transfer: Identifiable {
     var skipped = 0
     var errors = 0
     var finished = false
-    var fraction: Double { total > 0 ? min(1, Double(received) / Double(total)) : 0 }
+    var fraction: Double {
+        if finished && errors == 0 { return 1 }
+        return total > 0 ? min(1, Double(received) / Double(total)) : 0
+    }
 }
 
 enum Layout {
@@ -29,18 +32,18 @@ enum Layout {
     static let inset: CGFloat = 24
     static let sidebar: CGFloat = 220
     static let sidebarNavigationHeight: CGFloat = 190
-    static let windowWidth: CGFloat = 980
-    static let windowHeight: CGFloat = 680
-    static let minWidth: CGFloat = 820
-    static let minHeight: CGFloat = 560
+    static let windowWidth: CGFloat = 1280
+    static let windowHeight: CGFloat = 800
+    static let minWidth: CGFloat = 1100
+    static let minHeight: CGFloat = 600
     static let sheetWidth: CGFloat = 380
-    static let logHeight: CGFloat = 140
+    static let channelPaneWidth: CGFloat = 300
+    static let limitFieldWidth: CGFloat = 140
     static let maxLogEntries = 300
     static let maxMessages = 1_000_000
-    static let transferNameWidth: CGFloat = 190
-    static let transferProgressWidth: CGFloat = 110
-    static let transferCountWidth: CGFloat = 48
-    static let sidebarLogHeight: CGFloat = 220
+    static let transferNameWidth: CGFloat = 160
+    static let transferProgressWidth: CGFloat = 90
+    static let transferCountWidth: CGFloat = 44
     static let transferRowSpacing: CGFloat = 3
     static let transferIconSpacing: CGFloat = 4
 }
@@ -58,6 +61,7 @@ final class AppModel: ObservableObject {
     @Published var searchScope = "both"
     @Published var fileTypes: Set<String> = ["pdf", "boardview", "archive", "firmware"]
     @Published var followerCounts: [String: Int] = [:]
+    @Published var refreshingCounts = false
     @Published var running = false
     @Published var transfers: [Transfer] = []
     @Published var logs: [String] = []
@@ -257,11 +261,16 @@ final class AppModel: ObservableObject {
                 transfers[index].total = max(0, event.total ?? 0)
                 speed = Double(transferred) / max(Date().timeIntervalSince(started), 1)
             case "file_done": transfers[index].downloaded = event.count ?? transfers[index].downloaded + 1
+            case "error": transfers[index].errors += 1
             case "channel_done":
                 transfers[index].downloaded = event.count ?? 0
                 transfers[index].skipped = event.skipped ?? 0
                 transfers[index].errors = event.errors ?? 0
                 transfers[index].finished = true
+                if transfers[index].filename == "Waiting" {
+                    transfers[index].filename = transfers[index].errors > 0 ? "Channel unavailable"
+                        : transfers[index].skipped > 0 ? "Already downloaded" : "No matching files"
+                }
             default: break
             }
         }
@@ -270,6 +279,7 @@ final class AppModel: ObservableObject {
             if logs.count > Layout.maxLogEntries { logs.removeFirst(logs.count - Layout.maxLogEntries) }
         }
         if event.type == "done" {
+            speed = 0
             if operation == "organize" || operation == "undo" { planID = nil; moves = [] }
             status = event.status == "ok" ? "Completed" : event.status == "cancelled" ? "Stopped" : "Operation failed"
         }

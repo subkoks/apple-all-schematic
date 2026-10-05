@@ -53,6 +53,16 @@ def test_progress_and_redaction():
     assert "SENSITIVE" not in protocol.output.getvalue()
 
 
+def test_unavailable_channel_finishes_with_redacted_error():
+    protocol = engine.Protocol(io.StringIO())
+    protocol.progress(dict(type="resolve_error", channel="testchannel", error="SENSITIVE"))
+    assert events(protocol)[-1] == dict(
+        type="channel_done", version=1, channel="testchannel", count=0, skipped=0, errors=1
+    )
+    assert protocol.had_errors
+    assert "SENSITIVE" not in protocol.output.getvalue()
+
+
 @pytest.mark.parametrize(
     "line",
     [b"[]", b"null", b"broken", b'{"command":"unknown"}', b"x" * (engine.MAX_COMMAND_BYTES + 1)],

@@ -305,7 +305,8 @@ async def process_channel(
         caption = message.message or ""
         state_key = f"{channel}:{message.id}"
 
-        if resume and state_key in downloaded:
+        native_filtering = search_mode is not None or exact_keywords
+        if resume and state_key in downloaded and not native_filtering:
             skipped += 1
             continue
 
@@ -315,7 +316,7 @@ async def process_channel(
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()
-            if search_mode is not None or exact_keywords:
+            if native_filtering:
                 from native_search import matching_fields
 
                 if not matching_fields(
@@ -324,6 +325,10 @@ async def process_channel(
                     continue
             elif not any(k.lower() in text for k in keyword_filter):
                 continue
+
+        if resume and state_key in downloaded:
+            skipped += 1
+            continue
 
         dest = out_dir / filename
 

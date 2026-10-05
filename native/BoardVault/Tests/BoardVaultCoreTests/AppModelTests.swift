@@ -43,4 +43,23 @@ final class AppModelTests: XCTestCase {
         for _ in 0...Layout.maxLogEntries { model.handle(EngineEvent(type: "file_done"), operation: "download") }
         XCTAssertEqual(model.logs.count, Layout.maxLogEntries)
     }
+
+    @MainActor func testFinishedChannelsAndIdleSpeed() throws {
+        let model = AppModel(loadSavedState: false)
+        model.transfers = [Transfer(channel: "missing"), Transfer(channel: "empty")]
+        let decoder = JSONDecoder()
+        func event(_ json: String) throws -> EngineEvent { try decoder.decode(EngineEvent.self, from: Data(json.utf8)) }
+        model.handle(try event(#"{"type":"error","channel":"missing","message":"Channel failed"}"#), operation: "download")
+        XCTAssertEqual(model.transfers[0].errors, 1)
+        model.handle(try event(#"{"type":"channel_done","channel":"missing","count":0,"errors":1}"#), operation: "download")
+        XCTAssertTrue(model.transfers[0].finished)
+        XCTAssertEqual(model.transfers[0].errors, 1)
+        XCTAssertEqual(model.transfers[0].filename, "Channel unavailable")
+        model.handle(try event(#"{"type":"channel_done","channel":"empty","count":0,"errors":0}"#), operation: "download")
+        XCTAssertEqual(model.transfers[1].filename, "No matching files")
+        XCTAssertEqual(model.transfers[1].fraction, 1)
+        model.speed = 200
+        model.handle(try event(#"{"type":"done","status":"error"}"#), operation: "download")
+        XCTAssertEqual(model.speed, 0)
+    }
 }

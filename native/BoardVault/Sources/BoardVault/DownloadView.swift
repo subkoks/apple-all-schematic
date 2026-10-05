@@ -68,6 +68,7 @@ struct DownloadView: View {
                         Button { addingChannel = true } label: { Image(systemName: "plus") }
                             .help("Add channel").accessibilityLabel("Add channel")
                         Button { model.refreshFollowerCounts() } label: { Image(systemName: "arrow.clockwise") }
+                            .disabled(model.refreshingCounts)
                             .help("Refresh public subscriber counts")
                             .accessibilityLabel("Refresh subscriber counts")
                     }
@@ -76,7 +77,7 @@ struct DownloadView: View {
                             HStack(spacing: Layout.compact) {
                                 Toggle(channel.name, isOn: $channel.selected)
                                     .toggleStyle(.checkbox).lineLimit(1)
-                                    .help(channel.note ?? "Public Telegram channel")
+                                    .help("@\(channel.name)\n\(channel.note ?? "Public Telegram channel")")
                                 Spacer(minLength: 0)
                                 if let count = model.followerCounts[channel.name] {
                                     Text(count.formatted(.number.notation(.compactName)))
@@ -109,13 +110,13 @@ struct DownloadView: View {
                     }.pickerStyle(.segmented)
                     HStack {
                         Text("Message limit")
-                        TextField("0 = all", value: $model.limit, format: .number).frame(maxWidth: Layout.logHeight)
+                        TextField("0 = all", value: $model.limit, format: .number).frame(maxWidth: Layout.limitFieldWidth)
                     }
                     Text("0 scans all messages in each channel.").font(.caption).foregroundStyle(.secondary)
                     Toggle("Resume previous downloads", isOn: $model.resume)
                 }
                 .padding(.trailing, Layout.spacing)
-                .frame(minWidth: Layout.sheetWidth, maxWidth: Layout.sheetWidth)
+                .frame(minWidth: Layout.channelPaneWidth, maxWidth: Layout.channelPaneWidth)
                 .disabled(model.running)
                 ScrollView {
                     VStack(alignment: .leading, spacing: Layout.compact) {
@@ -125,6 +126,17 @@ struct DownloadView: View {
                             Text(model.rateText).monospacedDigit()
                         }
                         Text(model.etaText).font(.caption).foregroundStyle(.secondary)
+                        if !model.transfers.isEmpty {
+                            HStack(spacing: Layout.compact) {
+                                Text("Channel").frame(width: Layout.transferNameWidth, alignment: .leading)
+                                Text("Current file / status").frame(maxWidth: .infinity, alignment: .leading)
+                                Text("Progress").frame(width: Layout.transferProgressWidth)
+                                ForEach(["New", "Skipped", "Errors"], id: \.self) { label in
+                                    Text(label).frame(width: Layout.transferCountWidth, alignment: .trailing)
+                                }
+                            }
+                            .font(.caption2).foregroundStyle(.secondary)
+                        }
                         if model.transfers.isEmpty {
                             VStack(spacing: Layout.spacing) {
                                 Image(systemName: "arrow.down.document").font(.largeTitle).foregroundStyle(.secondary)
@@ -132,7 +144,9 @@ struct DownloadView: View {
                                 Text("Choose your channels and start a download.").foregroundStyle(.secondary)
                             }.frame(maxWidth: .infinity).padding(.vertical, Layout.inset)
                         }
-                        ForEach(model.transfers) { transfer in TransferRow(transfer: transfer) }
+                        LazyVStack(spacing: 0) {
+                            ForEach(model.transfers) { transfer in TransferRow(transfer: transfer) }
+                        }
                     }.padding(.leading, Layout.spacing)
                 }
             }
@@ -154,11 +168,13 @@ private struct TransferRow: View {
     let transfer: Transfer
 
     var body: some View {
-        VStack(spacing: Layout.transferRowSpacing) {
+        VStack(spacing: 0) {
             HStack(spacing: Layout.compact) {
                 HStack(spacing: Layout.transferIconSpacing) {
-                    Image(systemName: transfer.finished ? "checkmark.circle.fill" : "circle.dotted")
-                        .foregroundStyle(transfer.finished ? Color.green : Color.secondary)
+                    Image(systemName: transfer.errors > 0 ? "exclamationmark.circle.fill"
+                          : transfer.finished ? "checkmark.circle.fill" : "circle.dotted")
+                        .foregroundStyle(transfer.errors > 0 ? Color.red
+                                         : transfer.finished ? Color.green : Color.secondary)
                         .accessibilityHidden(true)
                     Text(transfer.channel).fontWeight(.medium).lineLimit(1)
                 }
@@ -179,20 +195,18 @@ private struct TransferRow: View {
                 count(transfer.errors, "errors", color: transfer.errors > 0 ? .red : .secondary)
             }
             .font(.caption)
+            .padding(.vertical, Layout.transferRowSpacing)
+            Divider()
         }
-        .padding(.vertical, Layout.transferRowSpacing)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(transfer.channel): \(transfer.filename), \(transfer.downloaded) downloaded, \(transfer.skipped) skipped, \(transfer.errors) errors")
-        Divider()
     }
 
     private func count(_ value: Int, _ label: String, color: Color = .secondary) -> some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            Text(value.formatted()).monospacedDigit()
-            Text(label).font(.caption2)
-        }
-        .foregroundStyle(color)
-        .frame(width: Layout.transferCountWidth, alignment: .trailing)
+        Text(value.formatted()).monospacedDigit()
+            .foregroundStyle(color)
+            .frame(width: Layout.transferCountWidth, alignment: .trailing)
+            .help("\(value.formatted()) \(label)")
     }
 }
 

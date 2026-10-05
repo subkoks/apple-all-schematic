@@ -89,6 +89,8 @@ class Protocol:
         kind = event["type"]
         if kind in {"file_error", "resolve_error"}:
             self.emit("error", channel=event["channel"], message="Channel or file download failed.")
+            if kind == "resolve_error":
+                self.emit("channel_done", channel=event["channel"], count=0, skipped=0, errors=1)
             return
         if kind == "file_bytes":
             now = time.monotonic()

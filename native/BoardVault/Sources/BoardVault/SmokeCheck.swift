@@ -15,12 +15,19 @@ extension AppModel {
             if let url = Bundle.main.resourceURL?.appendingPathComponent("config.json"),
                let data = try? Data(contentsOf: url),
                let catalogue = try? JSONDecoder().decode(Catalogue.self, from: data) {
-                transfers = catalogue.channels.keys.sorted().flatMap { category in
-                    (catalogue.channels[category] ?? []).map { Transfer(channel: $0) }
+                channels = catalogue.channels.keys.sorted().flatMap { category in
+                    (catalogue.channels[category] ?? []).map { Channel(name: $0, category: category) }
                 }
+                transfers = channels.map { Transfer(channel: $0.name) }
                 checks["compact_rows"] = !transfers.isEmpty && transfers.count == catalogue.channels.values.reduce(0) { $0 + $1.count }
             } else {
                 checks["compact_rows"] = false
+            }
+            section = "Download"
+            if let window = NSApp.windows.first(where: { $0.isVisible }) {
+                window.setContentSize(NSSize(width: Layout.minWidth, height: Layout.minHeight))
+                checks["capture-Download-minimum"] = await captureSafely(name: "Download-minimum")
+                window.setContentSize(NSSize(width: Layout.windowWidth, height: Layout.windowHeight))
             }
             for appearance in ["light", "dark"] {
                 theme = appearance
@@ -30,6 +37,7 @@ extension AppModel {
                 }
             }
             transfers = []
+            channels = [Channel(name: "fixturechannel", category: "apple")]
             section = "Organize"
             start("scan")
             await task?.value

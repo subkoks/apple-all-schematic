@@ -1,7 +1,8 @@
 # BoardVault — User Guide
 
 BoardVault downloads Apple device schematics and boardviews from public Telegram channels and
-organizes them into a clean library. This guide covers the macOS app; the CLI is documented in the
+organizes them into a clean library. This guide covers the Qt macOS app. For SwiftUI, use the
+[native guide](NATIVE_USER_GUIDE.md); the CLI is documented in the
 [README](../README.md#cli).
 
 ## 1. Install
@@ -15,7 +16,7 @@ organizes them into a clean library. This guide covers the macOS app; the CLI is
 1. Visit **<https://my.telegram.org>** and log in with your Telegram phone number.
 2. Open **API development tools**, create an app (any name), and copy the **API ID** and **API Hash**.
 3. In BoardVault, open **Settings → Account**, paste both, and **Save credentials**. They are stored
-   locally in a `.env` file and never leave your machine.
+   locally in a `.env` file and used to connect to Telegram. Never share that file.
 
 ## 3. Download
 

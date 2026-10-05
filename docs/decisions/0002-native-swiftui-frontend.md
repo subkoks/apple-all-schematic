@@ -44,6 +44,11 @@ Status: Accepted; implementation and acceptance tracked below.
 - Use system controls/materials, sidebar navigation, system accent, keyboard
   commands, accessible labels and explicit account actions.
 - Preserve unrelated staged policy/config changes. Commit only milestone paths.
+- [DECISION: native release candidate] Prepare 2.1.0-rc.1 under a native-specific tag and
+  version source (`native/release.json`). Retain Python/Qt 2.0.0. Build a verified ZIP even when
+  disk-image services are unavailable; include a DMG only after checking its app version and
+  signature. Package notes, checksums, and source metadata without publishing automatically.
+  Final desktop/platform acceptance is distinct from local source and artifact checks.
 
 ## Sources
 

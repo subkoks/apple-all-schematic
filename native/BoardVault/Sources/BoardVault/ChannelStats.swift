@@ -33,9 +33,12 @@ enum ChannelStats {
 
 extension AppModel {
     func refreshFollowerCounts() {
-        guard ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] == nil else { return }
+        guard !refreshingCounts,
+              ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] == nil else { return }
+        refreshingCounts = true
         let names = channels.map(\.name)
         Task {
+            defer { refreshingCounts = false }
             for start in stride(from: 0, to: names.count, by: ChannelStats.batchSize) {
                 let batch = Array(names[start..<min(start + ChannelStats.batchSize, names.count)])
                 await withTaskGroup(of: (String, Int?).self) { group in

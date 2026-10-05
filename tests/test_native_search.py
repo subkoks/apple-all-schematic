@@ -122,3 +122,34 @@ async def test_native_filter_options_reach_downloads(tmp_path, monkeypatch):
         file_types=["pdf"],
     )
     assert [call.args[0].id for call in download.call_args_list] == [1]
+
+
+@pytest.mark.asyncio
+async def test_native_resume_counts_only_matching_files(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    import tg_schematic_downloader as scraper
+
+    messages = [
+        SimpleNamespace(id=1, message="M5", name="board.pdf"),
+        SimpleNamespace(id=2, message="M4", name="other.pdf"),
+    ]
+
+    async def iterate(*args, **kwargs):
+        for message in messages:
+            yield message
+
+    monkeypatch.setattr(scraper, "DOWNLOAD_DIR", tmp_path)
+    monkeypatch.setattr(scraper, "get_filename", lambda message: message.name)
+    download = AsyncMock()
+    client = SimpleNamespace(
+        get_entity=AsyncMock(return_value="fixture"), iter_messages=iterate, download_media=download
+    )
+    state = {"downloaded": {"fixture:1": "board.pdf", "fixture:2": "other.pdf"}}
+    events = []
+    await scraper.process_channel(
+        client, "fixture", state, False, ["M5"], None, True, events.append, search_mode="all"
+    )
+    assert events[-1]["skipped"] == 1
+    download.assert_not_awaited()

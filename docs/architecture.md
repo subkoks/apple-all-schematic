@@ -3,7 +3,7 @@
 ## Overview
 
 Async Python engine that scrapes Apple device schematics from Telegram channels, with file
-organization and categorization, exposed through a **CLI**, the existing **PySide6 desktop app**, and the **native SwiftUI preview**.
+organization and categorization, exposed through a **CLI**, the existing **PySide6 desktop app**, and the **native SwiftUI app candidate**.
 They reuse the same downloader/classifier. Installed desktop apps share Application Support paths;
 the CLI and Qt development mode use repo `data/` unless deliberately configured otherwise.
 
@@ -120,6 +120,12 @@ own Python and classifier reference document. Packaging uses a separate managed 
 the workstation Python library requires macOS 26.2. Optional host OpenSSL acceleration is omitted;
 Telethon retains its supported pyaes fallback. The build verifies each bundled Mach-O's architecture,
 minimum OS and non-system dylib references before ad-hoc signing and reusing the existing DMG layout.
+
+`native/release.json` supplies the native version and build number for bundle metadata and
+About & Help. Release packaging verifies archive integrity and the extracted app signature,
+then writes versioned assets, checksums and a source manifest under `dist/releases/`. Native
+GitHub workflows test Python and Intel Swift; the manual packaging workflow creates artifacts
+without tags or release publication. See [RELEASING_NATIVE.md](RELEASING_NATIVE.md).
 
 `--ui-smoke` only runs when `BOARDVAULT_FIXTURE_ROOT` is explicitly provided. It bypasses normal
 preferences and uses fixture files for scan/organize/undo. Window captures, logs and a JSON report

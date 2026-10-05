@@ -8,34 +8,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- The native sidebar Activity log now starts collapsed and renders its entries only while open.
-- Native Download search modes (Any word by default, All words, Exact phrase), filename/caption
-  scope, and PDF/boardview/archive/firmware filters. Board numbers remain whole terms.
-- A prominent top search field, single-row download progress, sidebar Activity log, persistent
-  channel ordering controls, and approximate public subscriber counts where available.
-- Compact native download progress rows display each channel, current file, counts, and a thin
-  progress bar; the fixture smoke capture now exercises the full channel catalogue.
-- Ten optional native channel additions with documented source evidence and one-time migration
-  preserving selections, custom channels and subsequent removals. New entries start unchecked.
-
-- Refined native search: all whole words must match, with joined MacBook/chip name support;
-  `M5` no longer matches `M50`. Existing CLI/Qt matching is preserved.
-- New native-only graphite/teal circuit-vault icon with reproducible AppKit source.
-
-- Native SwiftUI macOS frontend in `native/BoardVault/` (macOS 13+, Intel first), preserving
-  the existing Qt GUI: Download, Organize, Library, Settings, login sheets, keyboard commands,
-  Dock progress, opt-in completion notifications, and Keychain credential storage.
-- Opt-in Python `--json` sidecar protocol with validated stdin commands, redacted events,
-  cancellable login/downloads, exact organization previews, and journaled undo.
-- Native-only safe file publishing, incomplete-download checks, and atomic state writes.
-- Isolated portable Python packaging, pinned build dependencies, architecture/minimum-OS checks,
-  and `scripts/build_native_app.sh` producing `dist/BoardVault-native.dmg` without replacing Qt output.
-- Python protocol/organizer tests, Swift mock-process tests, and a credential-free UI smoke check.
-  Real Telegram and Keychain acceptance remain pending manual verification.
-
 - Repository community-health files: `SECURITY.md`, `CONTRIBUTING.md`,
   this `CHANGELOG.md`, `.github/CODEOWNERS`, `.github/ISSUE_TEMPLATE/*`,
   `.github/pull_request_template.md`, and `.github/dependabot.yml`.
+
+## 2.1.0-rc.1 — Native candidate (not published)
+
+### Added
+
+- Native SwiftUI macOS app for Intel/macOS 13+, with Download, Organize, Library, Settings,
+  in-app Telegram login, Keychain credentials, theme selection, keyboard commands, Dock progress,
+  and optional notifications. The existing Qt GUI and CLI remain available.
+- Prominent search with Any/All/Phrase matching, filename/caption scope, and format filters.
+  Whole-term boundaries reject M50 for M5 and preserve board IDs across separators.
+- Compact single-row progress, persistent channel ordering, approximate public subscriber counts,
+  and a sidebar Activity log that starts collapsed and renders entries only while open.
+- Ten optional channel additions, offered once unchecked; documented source evidence and
+  migration preserve existing choices, custom channels, and removals.
+- Previewed organization with journaled undo, collision checks, safe file publication,
+  incomplete-download checks, atomic state writes, and redacted JSON sidecar events.
+- Native circuit-vault icon, a dedicated user guide, and About version/build details.
+- Versioned release ZIP/DMG assets, checksums and source manifest, portable pinned Python
+  packaging, signature/architecture checks, Python and Swift CI tests, and a manual build workflow.
+
+### Fixed
+
+- Native progress columns fit the minimum window size; idle speed resets after completion.
+- Unavailable channels show a terminal failure state, and native resume counts include only
+  files matching the active search. Legacy CLI/Qt matching remains unchanged.
+
+### Known limits
+
+- Candidate desktop, fresh-login, Keychain, Quick Look, notifications, and actual Ventura
+  acceptance have manual gates. See [release preparation](docs/RELEASING_NATIVE.md).
+- Intel only; ad-hoc signed without Developer ID notarization. Universal binaries are deferred.
 
 ## [2.0.0] - 2026-06-28
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Build the native app and DMG; retain prior artifacts. Exit 0 on success, 1 on failure.
+# Build the native app, versioned ZIP/checksums, and optional DMG; retain prior artifacts.
+# Exit 0 on success, 1 on failure. --app-only creates a ZIP without disk-image services.
 # Usage: scripts/build_native_app.sh [--app-only | --help]
 set -euo pipefail
 IFS=$'\n\t'
 
 if [[ "${1:-}" == "--help" ]]; then
-    echo 'Build BoardVault native app and dist/BoardVault-native.dmg (requires uv and Swift tools).'
+    echo 'Build BoardVault app, versioned release ZIP/checksums and DMG (requires uv and Swift tools).'
     exit 0
 fi
 APP_ONLY=false
@@ -71,23 +72,23 @@ ditto "${STAGE}/engine-dist/boardvault-engine" "${RESOURCES}/engine"
 cp "${PROJECT_DIR}/native/resources/app.icns" "${RESOURCES}/app.icns"
 cp "${PROJECT_DIR}/args/config.json" "${RESOURCES}/config.json"
 cp "${PROJECT_DIR}/LICENSE" "${RESOURCES}/LICENSE"
-cat > "${APP}/Contents/Info.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-<key>CFBundleName</key><string>BoardVault</string>
-<key>CFBundleDisplayName</key><string>BoardVault</string>
-<key>CFBundleIdentifier</key><string>com.subkoks.boardvault.native</string>
-<key>CFBundleExecutable</key><string>BoardVault</string>
-<key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>2.0.0</string>
-<key>CFBundleVersion</key><string>20006</string>
-<key>CFBundleIconFile</key><string>app.icns</string>
-<key>LSMinimumSystemVersion</key><string>13.0</string>
-<key>NSHighResolutionCapable</key><true/>
-<key>NSPrincipalClass</key><string>NSApplication</string>
-</dict></plist>
-PLIST
+"${PY}" - "${PROJECT_DIR}/native/release.json" "${APP}/Contents/Info.plist" <<'PYTHON'
+import json
+import plistlib
+import sys
+from pathlib import Path
+release = json.loads(Path(sys.argv[1]).read_text())
+info = {
+    "CFBundleName": "BoardVault", "CFBundleDisplayName": "BoardVault",
+    "CFBundleIdentifier": "com.subkoks.boardvault.native", "CFBundleExecutable": "BoardVault",
+    "CFBundlePackageType": "APPL", "CFBundleShortVersionString": release["version"],
+    "CFBundleVersion": release["build"], "BoardVaultReleaseVersion": release["release_version"],
+    "CFBundleIconFile": "app.icns", "LSMinimumSystemVersion": "13.0",
+    "NSHighResolutionCapable": True, "NSPrincipalClass": "NSApplication",
+    "NSHumanReadableCopyright": "BoardVault contributors · MIT License",
+}
+Path(sys.argv[2]).write_bytes(plistlib.dumps(info))
+PYTHON
 plutil -lint "${APP}/Contents/Info.plist"
 "${PY}" "${PROJECT_DIR}/scripts/verify_native_bundle.py" "${APP}" "${ARCH}"
 # Local ad-hoc signature only; no Developer ID, notarization, or paid tooling.
@@ -100,15 +101,18 @@ if [[ -e "${FINAL_APP}" ]]; then mv "${FINAL_APP}" "${STAGE}/previous-BoardVault
 mv "${APP}" "${FINAL_APP}"
 echo "Built: ${FINAL_APP}"
 if [[ "${APP_ONLY}" == true ]]; then
+    "${PY}" "${PROJECT_DIR}/scripts/package_native_release.py" --arch "${ARCH}" --app "${FINAL_APP}"
     echo 'App-only build: any existing DMG belongs to an earlier build.'
     exit 0
 fi
 if ! "${PY}" -m dmgbuild -s "${PROJECT_DIR}/src/gui/packaging/dmg_settings.py" \
     -D app="${FINAL_APP}" BoardVault "${STAGE}/BoardVault-native.dmg"; then
+    "${PY}" "${PROJECT_DIR}/scripts/package_native_release.py" --arch "${ARCH}" --app "${FINAL_APP}"
     echo 'App is ready; DMG creation failed. Any existing DMG is an earlier build.' >&2
     exit 1
 fi
 if [[ -e "${FINAL_DMG}" ]]; then mv "${FINAL_DMG}" "${STAGE}/previous-BoardVault-${STAMP}.dmg"; fi
 mv "${STAGE}/BoardVault-native.dmg" "${FINAL_DMG}"
+"${PY}" "${PROJECT_DIR}/scripts/package_native_release.py" --arch "${ARCH}" --app "${FINAL_APP}" --dmg "${FINAL_DMG}"
 echo "Built: ${FINAL_DMG}"
 echo 'Ad-hoc signed for local use; not Developer ID signed or notarized.'

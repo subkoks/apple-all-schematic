@@ -42,9 +42,10 @@ struct SettingsView: View {
                     .onChange(of: model.notifications) { enabled in if enabled { model.requestNotifications() } }
             }
             Section("About & Help") {
-                Text("BoardVault · Native preview").font(.headline)
-                Text("SwiftUI interface · Python / Telethon engine · MIT License")
-                Link("User guide", destination: URL(string: "https://github.com/subkoks/apple-all-schematic/blob/main/docs/USER_GUIDE.md")!)
+                Text("BoardVault").font(.headline)
+                Text(versionLabel).font(.caption).foregroundStyle(.secondary)
+                Text("Schematics, in order. · MIT License")
+                Link("User guide", destination: URL(string: "https://github.com/subkoks/apple-all-schematic/blob/main/docs/NATIVE_USER_GUIDE.md")!)
                 Link("Report an issue", destination: URL(string: "https://github.com/subkoks/apple-all-schematic/issues")!)
             }
         }
@@ -55,6 +56,11 @@ struct SettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: { Text("You will need to sign in again. Your API credentials remain in Keychain.") }
         .onDisappear { model.savePreferences() }
+    }
+    private var versionLabel: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "BoardVaultReleaseVersion") as? String ?? "Development"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "SwiftPM"
+        return "Native \(version) · Build \(build)"
     }
     private func folder(_ title: String, path: String, choose: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: Layout.compact) {
