@@ -59,16 +59,16 @@ goals/
 2. Connect to Telegram via Telethon async client
 3. Iterate channels → filter by keywords/extensions → download
 4. State saved after each download (crash resilience)
-5. Cross-channel dedup by normalized filename
+5. Resume tracking by channel/message ID, with filename collision handling within each channel
 6. Organize: categorize files by brand/product into `data/organized/`
 
 ## Key Design Decisions
 
 - State saved after every download for crash resilience
-- Parallel channel processing via `asyncio.gather` + semaphore
-- Retry with exponential backoff on download failures
-- FloodWaitError handling for Telegram rate limiting
-- File integrity checks against Telegram metadata
+- Sequential channel processing; native channel order controls download priority
+- Download failures surface through print/callback events; native events use redacted error text
+- Telethon supplies Telegram transport and request-level handling
+- Native file integrity checks against Telegram metadata before safe publication
 
 ## Native frontend (`native/BoardVault/`)
 

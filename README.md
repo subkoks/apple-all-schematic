@@ -58,7 +58,7 @@ local preparation; a candidate is not a claim of final platform acceptance.
 
 1. **Get Telegram API credentials** (free, ~2 min) at **<https://my.telegram.org>** → *API
    development tools* → note your **API ID** and **API Hash**.
-2. **Settings → Account:** paste the API ID and hash (stored locally in `.env`, never uploaded).
+2. **Settings → Account:** paste the API ID and hash (stored locally in `.env` for the Qt app).
 3. **Download tab:** choose channels (add/remove your own with **+ Add** / right-click), pick a
    filter (**Apple only** or **All files**), then **Start**. The first run asks for your phone
    number, login code, and 2FA password — all in-app.
@@ -175,6 +175,9 @@ mode, any existing DMG remains an earlier artifact. See the current
 Outputs: **`dist/native/BoardVault.app`** and **`dist/BoardVault-native.dmg`**. These are locally
 ad-hoc signed, not Developer ID signed or notarized. The native bundle identifier is
 `com.subkoks.boardvault.native`. Keep it in a separate folder if retaining both desktop apps.
+Versioned ZIP/DMG assets, `SHA256SUMS`, source metadata, and release notes are prepared under
+`dist/releases/2.1.0-rc.1-x86_64/`. App-only builds include a verified ZIP. See
+[release preparation](docs/RELEASING_NATIVE.md) before tagging or publishing.
 
 In the native app:
 

@@ -1,8 +1,38 @@
-# Native frontend verification — 2026-10-05
+# Native frontend verification — updated 2026-10-06
+
+## Release candidate 2.1.0-rc.1
+
+Prepared locally from release-source commit `53701fc`, bundle build **20101**. No GitHub push,
+tag, PR, workflow dispatch, or release publication was performed. A local source/diff review
+fixed channel failure/no-match states, search-specific resume counts, idle speed, repeated count
+refreshes, and the default/minimum-width progress layout. This was a local review, not an
+independent security audit.
+
+- **PASS:** 160 Python tests plus 56 subtests; 15 Swift tests; Ruff on the changed/native Python
+  code; shellcheck; actionlint on both new GitHub workflows; whitespace/diff checks.
+- **PASS:** signed x86_64 release app with macOS <=13 binary metadata at `dist/native/BoardVault.app`.
+- **PASS:** versioned ZIP integrity, signature of the extracted app, and SHA256SUMS verification.
+  Assets/notes/manifest: `dist/releases/2.1.0-rc.1-x86_64/`. The manifest records source commit,
+  build/version, architecture, ad-hoc signing, no notarization, and clean release build inputs.
+- **PASS:** packaged-engine config/scan/organize/undo and restored fixture state;
+  `build/native-engine-smoke-8tx5sh4y/report.json`.
+- **FAIL / desktop gate pending:** fixture app launch exited -6 (SIGABRT), with no UI report
+  produced, in the managed runtime. Evidence: `build/native-smoke-rs0ony_v/ui-smoke.json`.
+  The latest candidate needs a normal desktop Terminal run; no current visual acceptance is claimed.
+- **BLOCKED:** fresh DMG creation failed with `hdiutil: create failed - Device not configured`.
+  Only the verified ZIP is included in the candidate directory. An unversioned older DMG in
+  `dist/` is not a candidate asset.
+- **PENDING:** GitHub jobs have not run. Fresh login, actual Ventura execution, Keychain,
+  Quick Look and notification acceptance remain manual checks. Earlier user download screenshots
+  establish earlier app behavior, not final-candidate acceptance.
+
+See [RELEASING_NATIVE.md](RELEASING_NATIVE.md) for the exact gates and publication boundary.
+
+## Earlier implementation evidence
 
 Implementation is complete locally; **full acceptance is not complete**. The existing PySide6
 GUI sources and build scripts have no task changes. No real Telegram credentials or sessions
-were read by the agent, and the agent performed no Telegram network operation.
+were read by the agent, and the agent performed no real Telegram account operation.
 The user subsequently confirmed a real download in the installed app on 2026-10-05: screenshots
 show live progress, then completion with 3 downloaded, 41 skipped and 0 errors. This verifies an
 authorized session download; it does not establish that fresh phone/code/2FA prompts were tested.

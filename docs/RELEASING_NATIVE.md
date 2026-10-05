@@ -48,7 +48,10 @@ build/upload workflow; it does not publish releases or create tags. CI execution
 until these committed workflows reach GitHub.
 
 Review the branch diff, preserve unrelated policy/config work, and push/open a PR only within
-the user's authorization. After required checks and manual acceptance, a reviewed release can
+the user's authorization. Keep a preparation PR in draft while gates are pending: the existing
+auto-merge workflow enables auto-merge for non-draft same-repository PRs. Once the new jobs have
+actually run, require their verified check names in branch protection before marking the PR ready.
+After required checks and manual acceptance, a reviewed release can
 use `docs/releases/2.1.0-rc.1.md` as its body and the versioned assets as uploads. Use a prerelease
 for this candidate. Inspect the uploaded checksums and manifest before making it available.
 

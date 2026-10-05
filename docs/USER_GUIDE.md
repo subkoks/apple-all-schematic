@@ -8,8 +8,9 @@ organizes them into a clean library. This guide covers the Qt macOS app. For Swi
 ## 1. Install
 
 1. Open `BoardVault.dmg` and drag **BoardVault** to **Applications**.
-2. First launch (unsigned app): **right-click → Open → Open**, or run
-   `xattr -dr com.apple.quarantine "/Applications/BoardVault.app"`.
+2. If macOS blocks a trusted download, attempt to launch it, then use System Settings →
+   Privacy & Security → **Open Anyway**, following
+   [Apple's instructions](https://support.apple.com/en-us/102445).
 
 ## 2. Get Telegram API credentials
 
@@ -52,7 +53,7 @@ reveal it with **Open**).
 
 ## Troubleshooting
 
-- **Gatekeeper blocks the app:** it's unsigned — use the right-click → Open step above.
+- **Gatekeeper blocks the app:** use the system approval steps above for a trusted download.
 - **Wrong login code / stuck login:** **Settings → Account → Log out**, then Start again.
 - **Channel won't resolve:** confirm the exact `@name` and that the channel is public or that you've
   joined it.
