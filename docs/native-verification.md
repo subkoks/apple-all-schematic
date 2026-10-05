@@ -2,7 +2,7 @@
 
 ## Release candidate 2.1.0-rc.1
 
-Prepared locally from release-source commit `53701fc`, bundle build **20101**. No GitHub push,
+Built from committed source `82b7fb3` (release implementation `53701fc`), bundle build **20101**. No GitHub push,
 tag, PR, workflow dispatch, or release publication was performed. A local source/diff review
 fixed channel failure/no-match states, search-specific resume counts, idle speed, repeated count
 refreshes, and the default/minimum-width progress layout. This was a local review, not an
@@ -16,12 +16,18 @@ independent security audit.
   build/version, architecture, ad-hoc signing, no notarization, and clean release build inputs.
 - **PASS:** packaged-engine config/scan/organize/undo and restored fixture state;
   `build/native-engine-smoke-8tx5sh4y/report.json`.
-- **FAIL / desktop gate pending:** fixture app launch exited -6 (SIGABRT), with no UI report
-  produced, in the managed runtime. Evidence: `build/native-smoke-rs0ony_v/ui-smoke.json`.
-  The latest candidate needs a normal desktop Terminal run; no current visual acceptance is claimed.
-- **BLOCKED:** fresh DMG creation failed with `hdiutil: create failed - Device not configured`.
-  Only the verified ZIP is included in the candidate directory. An unversioned older DMG in
-  `dist/` is not a candidate asset.
+- **PASS:** normal desktop fixture launch, compact rows, light/dark Download and Settings
+  captures, Library, scan/organize/undo, restored bytes/state and clean exit. All checks in
+  `build/native-smoke-fbr9bylb/ui-smoke.json` passed. Captures were visually inspected: all
+  22 transfer rows fit in the captured window, columns align and the Activity log is collapsed.
+  This does not assert that 22 rows fit at every smaller window height.
+- **PASS:** fresh DMG and ZIP built on 2026-10-06 at 00:51 local time. Both versioned assets
+  pass `shasum -a 256 -c SHA256SUMS`; the release app passes deep/strict signature verification.
+  Packaging verified the mounted DMG app and extracted ZIP app before recording the manifest.
+- **Historical environment failure:** managed GUI launch exited -6 without a UI report
+  (`build/native-smoke-rs0ony_v/ui-smoke.json`), and managed DMG creation failed with
+  `Device not configured`. The subsequent desktop run passed; these are no longer candidate
+  blockers. Failed evidence is retained.
 - **PENDING:** GitHub jobs have not run. Fresh login, actual Ventura execution, Keychain,
   Quick Look and notification acceptance remain manual checks. Earlier user download screenshots
   establish earlier app behavior, not final-candidate acceptance.
