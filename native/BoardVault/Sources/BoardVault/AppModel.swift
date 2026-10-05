@@ -7,6 +7,7 @@ struct Channel: Codable, Identifiable {
     var name: String
     var category: String
     var selected = true
+    var note: String? = nil
 }
 
 struct Transfer: Identifiable {
@@ -70,7 +71,7 @@ final class AppModel: ObservableObject {
     private var started = Date()
     private var transferred: Int64 = 0
 
-    init() {
+    init(loadSavedState: Bool = true) {
         var source = URL(fileURLWithPath: #filePath)
         for _ in 0..<Self.sourceParentLevels { source.deleteLastPathComponent() }
         repo = ProcessInfo.processInfo.environment["BOARDVAULT_REPO"].map { URL(fileURLWithPath: $0) } ?? source
@@ -83,29 +84,51 @@ final class AppModel: ObservableObject {
         }
         if ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] != nil {
             channels = [Channel(name: "fixturechannel", category: "apple")]
-        } else {
+        } else if loadSavedState {
             loadChannels()
             loadPreferences()
         }
     }
 
-    func loadChannels() {
-        if let saved = UserDefaults.standard.data(forKey: "native.channels"),
-           let decoded = try? JSONDecoder().decode([Channel].self, from: saved) {
-            channels = decoded
-            return
+    static func mergingAdditions(_ existing: [Channel], additions: [Channel], seen: Set<String>) -> [Channel] {
+        var result = existing
+        var names = Set(existing.map { $0.name.lowercased() })
+        for var channel in additions {
+            let key = channel.name.lowercased()
+            guard !seen.contains(key), names.insert(key).inserted else { continue }
+            channel.selected = false
+            result.append(channel)
         }
+        return result
+    }
+
+    func loadChannels() {
+        let defaults = UserDefaults.standard
+        let saved = defaults.data(forKey: "native.channels")
+            .flatMap { try? JSONDecoder().decode([Channel].self, from: $0) }
+        if let saved { channels = saved }
         let configURL = Bundle.main.resourceURL?.appendingPathComponent("config.json")
         let path = configURL.flatMap { FileManager.default.fileExists(atPath: $0.path) ? $0 : nil }
             ?? repo.appendingPathComponent("args/config.json")
-        struct Config: Decodable { let channels: [String: [String]] }
+        struct Config: Decodable {
+            let channels: [String: [String]]
+            let native_channel_additions: [String]?
+            let channel_notes: [String: String]?
+        }
         guard let data = try? Data(contentsOf: path), let config = try? JSONDecoder().decode(Config.self, from: data) else {
-            error = "Could not load channel configuration. Add channels to begin."
+            if saved == nil { error = "Could not load channel configuration. Add channels to begin." }
             return
         }
-        channels = config.channels.keys.sorted().flatMap { category in
-            (config.channels[category] ?? []).map { Channel(name: $0, category: category) }
+        let introduced = Set((config.native_channel_additions ?? []).map { $0.lowercased() })
+        let catalog = config.channels.keys.sorted().flatMap { category in
+            (config.channels[category] ?? []).map {
+                Channel(name: $0, category: category, selected: !introduced.contains($0.lowercased()), note: config.channel_notes?[$0])
+            }
         }
+        let seen = Set((defaults.stringArray(forKey: "native.seenChannelAdditions") ?? []).map { $0.lowercased() })
+        channels = saved.map { Self.mergingAdditions($0, additions: catalog.filter { introduced.contains($0.name.lowercased()) }, seen: seen) } ?? catalog
+        saveChannels()
+        defaults.set(Array(seen.union(introduced)).sorted(), forKey: "native.seenChannelAdditions")
     }
 
     func saveChannels() {

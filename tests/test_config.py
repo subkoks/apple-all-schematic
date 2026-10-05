@@ -32,7 +32,7 @@ class TestConfigLoading:
 
 
 class TestConfigIntegrity:
-    """Validate the shipped args/config.json matches hardcoded defaults."""
+    """Validate the shipped catalogue preserves base channels and documented additions."""
 
     def test_config_json_exists(self) -> None:
         config_path = Path(__file__).parent.parent / "args" / "config.json"
@@ -55,9 +55,16 @@ class TestConfigIntegrity:
         assert "laptop" in data["channels"]
         assert "mobile" in data["channels"]
         assert "apple" in data["channels"]
-        assert len(data["channels"]["laptop"]) == 8
-        assert len(data["channels"]["mobile"]) == 3
-        assert len(data["channels"]["apple"]) == 1
+        additions = set(data["native_channel_additions"])
+        assert additions.isdisjoint(sum(scraper.CHANNELS.values(), []))
+        for category, defaults in scraper.CHANNELS.items():
+            expected = set(defaults) | (additions if category == "laptop" else set())
+            assert set(data["channels"][category]) == expected
+        names = sum(data["channels"].values(), [])
+        assert len(names) == len({name.lower() for name in names})
+        assert set(data["channel_notes"]) == additions
+        for name in names:
+            assert scraper.validate_channel_names([name]) == [name]
 
     def test_config_extensions_are_dotted(self) -> None:
         config_path = Path(__file__).parent.parent / "args" / "config.json"

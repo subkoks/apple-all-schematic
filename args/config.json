@@ -8,7 +8,17 @@
       "notebookschematic",
       "laptop_bios_schematic",
       "alischematics",
-      "hrtechno"
+      "hrtechno",
+      "vinafix_bios",
+      "boardviews",
+      "BoardviewSchematics",
+      "schematiclaptopramkushwaha",
+      "efibios",
+      "Schematics_boardviews",
+      "boardviewlaptop",
+      "laptopsboardview",
+      "cidschematicandboardviewofficial",
+      "laptexdna"
     ],
     "mobile": [
       "SMART_PHONE_SCHEMATICS",
@@ -51,5 +61,29 @@
     "retry_base_delay_seconds": 2,
     "parallel_channels": 3,
     "state_save_interval": 1
+  },
+  "native_channel_additions": [
+    "vinafix_bios",
+    "boardviews",
+    "BoardviewSchematics",
+    "schematiclaptopramkushwaha",
+    "efibios",
+    "Schematics_boardviews",
+    "boardviewlaptop",
+    "laptopsboardview",
+    "cidschematicandboardviewofficial",
+    "laptexdna"
+  ],
+  "channel_notes": {
+    "vinafix_bios": "Public attachment posts checked 2026-10-05.",
+    "boardviews": "Public attachment posts checked 2026-10-05.",
+    "BoardviewSchematics": "Public attachment posts checked 2026-10-05.",
+    "schematiclaptopramkushwaha": "Public attachment posts checked 2026-10-05.",
+    "efibios": "BIOS / EC firmware archive; not primarily schematics. Public attachments checked.",
+    "Schematics_boardviews": "Archived file posts found; live Telegram history not verified.",
+    "boardviewlaptop": "Archived file posts found; live Telegram history not verified.",
+    "laptopsboardview": "Archived file posts found; live Telegram history not verified.",
+    "cidschematicandboardviewofficial": "Archived file posts found; live Telegram history not verified.",
+    "laptexdna": "Archived file posts found; live Telegram history not verified."
   }
 }

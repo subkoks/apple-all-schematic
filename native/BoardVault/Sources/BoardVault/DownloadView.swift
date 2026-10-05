@@ -31,6 +31,7 @@ struct DownloadView: View {
                                     if channel.category == category {
                                         Toggle(channel.name, isOn: $channel.selected)
                                             .toggleStyle(.checkbox)
+                                            .help(channel.note ?? "Public Telegram channel")
                                             .contextMenu { Button("Remove channel", role: .destructive) { model.removeChannel(channel.name) } }
                                     }
                                 }

@@ -7,6 +7,17 @@ The user subsequently confirmed a real download in the installed app on 2026-10-
 show live progress, then completion with 3 downloaded, 41 skipped and 0 errors. This verifies an
 authorized session download; it does not establish that fresh phone/code/2FA prompts were tested.
 
+## Channel catalogue expansion — 2026-10-05
+
+Build 20003 at `dist/native/BoardVault.app` embeds 22 channels, including 10 optional additions.
+Five have directly observed public attachments; five have archived attachment evidence only.
+See [channel-sources.md](channel-sources.md) for links and limits. The update preserves saved
+selections/custom channels and offers additions once, unchecked. Regression tests cover duplicate
+handles and removals. Test view models no longer load real preferences. Python: 155 tests plus
+56 subtests; Swift: 13 tests. Release signature/architecture checks pass. No real Telegram operation
+was performed. Desktop acceptance of this catalogue update remains user-run. The DMG is older;
+rebuild it from normal Terminal to include build 20003.
+
 ## Search and icon refinement — 2026-10-05
 
 - User-supplied screenshots confirm actual channel downloading and completion in the earlier build.
@@ -25,7 +36,7 @@ authorized session download; it does not establish that fresh phone/code/2FA pro
 
 - **PASS:** 155 Python tests, plus 56 subtests. Run from `tests/` with dotenv disabled to avoid
   pytest traversing the denied repo `.env` during collection.
-- **PASS:** 12 Swift XCTest tests, including malformed engine output, stderr draining, login
+- **PASS:** 13 Swift XCTest tests, including malformed engine output, stderr draining, login
   commands, crash handling, cancellation and force-stop of a SIGTERM-ignoring fixture.
 - **PASS:** Ruff on changed Python files, shellcheck on the native build script, and diff checks.
 - **PASS:** latest Intel release app built at `dist/native/BoardVault.app`.

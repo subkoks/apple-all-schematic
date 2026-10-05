@@ -122,6 +122,9 @@ pip install -e ".[build]"          # packaging deps (pyinstaller, dmgbuild)
 
 The app icon is generated with `./scripts/make_icon.sh` (built-in `sips`/`iconutil`).
 
+See [additional channel sources](docs/channel-sources.md) for 10 optional native additions,
+coverage examples, and the distinction between current public previews and archived evidence.
+
 ## Native SwiftUI preview
 
 The existing PySide6 GUI and its packaging scripts remain unchanged. The native source is in

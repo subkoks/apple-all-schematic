@@ -3,8 +3,24 @@ import BoardVaultCore
 @testable import BoardVault
 
 final class AppModelTests: XCTestCase {
+    @MainActor func testCatalogUpdatePreservesChoicesAndRemovedChannels() {
+        let existing = [Channel(name: "CUSTOM", category: "apple", selected: true),
+                        Channel(name: "boardviews", category: "laptop", selected: true)]
+        let additions = [Channel(name: "BoardViews", category: "laptop"),
+                         Channel(name: "removed", category: "laptop"),
+                         Channel(name: "newsource", category: "laptop", note: "Archive only")]
+        let merged = AppModel.mergingAdditions(existing, additions: additions, seen: ["removed"])
+        XCTAssertEqual(merged.map(\.name), ["CUSTOM", "boardviews", "newsource"])
+        XCTAssertTrue(merged[0].selected)
+        XCTAssertTrue(merged[1].selected)
+        XCTAssertFalse(merged[2].selected)
+        XCTAssertEqual(merged[2].note, "Archive only")
+        let afterRemoval = AppModel.mergingAdditions(existing, additions: additions, seen: ["removed", "newsource"])
+        XCTAssertEqual(afterRemoval.map(\.name), existing.map(\.name))
+    }
+
     @MainActor func testDownloadProgressAndFailure() throws {
-        let model = AppModel()
+        let model = AppModel(loadSavedState: false)
         model.transfers = [Transfer(channel: "fixture")]
         let decoder = JSONDecoder()
         func event(_ json: String) throws -> EngineEvent { try decoder.decode(EngineEvent.self, from: Data(json.utf8)) }
@@ -19,7 +35,7 @@ final class AppModelTests: XCTestCase {
     }
 
     @MainActor func testLoginPromptAndBoundedLogs() throws {
-        let model = AppModel()
+        let model = AppModel(loadSavedState: false)
         let login = try JSONDecoder().decode(EngineEvent.self, from: Data(#"{"type":"login_required","field":"password"}"#.utf8))
         model.handle(login, operation: "login")
         XCTAssertEqual(model.loginField, "password")

@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Ten optional native channel additions with documented source evidence and one-time migration
+  preserving selections, custom channels and subsequent removals. New entries start unchecked.
+
 - Refined native search: all whole words must match, with joined MacBook/chip name support;
   `M5` no longer matches `M50`. Existing CLI/Qt matching is preserved.
 - New native-only graphite/teal circuit-vault icon with reproducible AppKit source.
