@@ -253,6 +253,7 @@ async def process_channel(
     progress: Callable[[dict], None] | None = None,
     *,
     safe_files: bool = False,
+    exact_keywords: bool = False,
 ):
     # Optional structured-event sink for GUI/embedding. When None, behaviour is
     # identical to the CLI (print-only). Sink errors never leak into the loop.
@@ -306,7 +307,12 @@ async def process_channel(
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()
-            if not any(k.lower() in text for k in keyword_filter):
+            if exact_keywords:
+                from native_search import matches
+
+                if not matches(text, " ".join(keyword_filter)):
+                    continue
+            elif not any(k.lower() in text for k in keyword_filter):
                 continue
 
         dest = out_dir / filename

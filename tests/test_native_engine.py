@@ -106,6 +106,7 @@ async def test_operation_preserves_selected_channels(tmp_path, monkeypatch):
     protocol = engine.Protocol(io.StringIO())
     await engine.operation(options(tmp_path), protocol, lambda *args: client)
     assert process.call_args.args[1] == "testchannel"
+    assert process.call_args.kwargs["exact_keywords"] is True
     client.disconnect.assert_awaited_once()
 
 

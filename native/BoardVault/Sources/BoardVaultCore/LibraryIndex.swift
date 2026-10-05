@@ -23,10 +23,10 @@ public enum LibraryIndex {
                     let name = url.lastPathComponent
                     if attributes.isDirectory == true {
                         let children = try walk(url)
-                        guard search.isEmpty || !children.isEmpty || name.localizedCaseInsensitiveContains(search) else { return nil }
+                        guard search.isEmpty || !children.isEmpty || SearchQuery.matches(name, query: search) else { return nil }
                         return LibraryNode(url: url, name: name, children: children)
                     }
-                    guard attributes.isRegularFile == true, search.isEmpty || name.localizedCaseInsensitiveContains(search) else { return nil }
+                    guard attributes.isRegularFile == true, search.isEmpty || SearchQuery.matches(name, query: search) else { return nil }
                     return LibraryNode(url: url, name: name, children: nil)
                 }
         }

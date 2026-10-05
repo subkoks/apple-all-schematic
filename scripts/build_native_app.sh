@@ -68,7 +68,7 @@ BOARDVAULT_BUILD_ARCH="${ARCH}" "${PY}" -m PyInstaller --noconfirm \
 
 cp "${BIN_DIR}/BoardVault" "${APP}/Contents/MacOS/BoardVault"
 ditto "${STAGE}/engine-dist/boardvault-engine" "${RESOURCES}/engine"
-cp "${PROJECT_DIR}/src/gui/resources/app.icns" "${RESOURCES}/app.icns"
+cp "${PROJECT_DIR}/native/resources/app.icns" "${RESOURCES}/app.icns"
 cp "${PROJECT_DIR}/args/config.json" "${RESOURCES}/config.json"
 cp "${PROJECT_DIR}/LICENSE" "${RESOURCES}/LICENSE"
 cat > "${APP}/Contents/Info.plist" <<'PLIST'
@@ -81,7 +81,7 @@ cat > "${APP}/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>BoardVault</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>2.0.0</string>
-<key>CFBundleVersion</key><string>20001</string>
+<key>CFBundleVersion</key><string>20002</string>
 <key>CFBundleIconFile</key><string>app.icns</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSHighResolutionCapable</key><true/>

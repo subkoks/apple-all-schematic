@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Refined native search: all whole words must match, with joined MacBook/chip name support;
+  `M5` no longer matches `M50`. Existing CLI/Qt matching is preserved.
+- New native-only graphite/teal circuit-vault icon with reproducible AppKit source.
+
 - Native SwiftUI macOS frontend in `native/BoardVault/` (macOS 13+, Intel first), preserving
   the existing Qt GUI: Download, Organize, Library, Settings, login sheets, keyboard commands,
   Dock progress, opt-in completion notifications, and Keychain credential storage.

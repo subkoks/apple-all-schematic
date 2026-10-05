@@ -2,13 +2,30 @@
 
 Implementation is complete locally; **full acceptance is not complete**. The existing PySide6
 GUI sources and build scripts have no task changes. No real Telegram credentials or sessions
-were read, and no Telegram network operation was performed.
+were read by the agent, and the agent performed no Telegram network operation.
+The user subsequently confirmed a real download in the installed app on 2026-10-05: screenshots
+show live progress, then completion with 3 downloaded, 41 skipped and 0 errors. This verifies an
+authorized session download; it does not establish that fresh phone/code/2FA prompts were tested.
+
+## Search and icon refinement — 2026-10-05
+
+- User-supplied screenshots confirm actual channel downloading and completion in the earlier build.
+- Native download and Library search now require all whole tokens; regression cases reject M50
+  for M5 and reject MacBook Air/M4 for MacBook Pro M5. Common joined names are normalized.
+  These are filename/caption matches, not verified hardware metadata; numeric board IDs alone
+  cannot establish a processor generation. CLI/Qt keyword behavior is preserved.
+- The new circuit-vault icon is native-only. AppKit source and PNG/ICNS assets are checked in.
+- Updated release app: `dist/native/BoardVault.app` (bundle build 20002). Signature and bundled
+  engine fixture checks pass. The updated app has not yet had a desktop visual smoke test.
+- **Current DMG is older:** rebuilding the refined app succeeded, but dmgbuild failed in this
+  managed execution environment. `dist/BoardVault-native.dmg` still contains build 20001.
+  Run `./scripts/build_native_app.sh` from the normal desktop Terminal to refresh the DMG.
 
 ## Verified
 
-- **PASS:** 142 Python tests, plus 56 subtests. Run from `tests/` with dotenv disabled to avoid
+- **PASS:** 155 Python tests, plus 56 subtests. Run from `tests/` with dotenv disabled to avoid
   pytest traversing the denied repo `.env` during collection.
-- **PASS:** 11 Swift XCTest tests, including malformed engine output, stderr draining, login
+- **PASS:** 12 Swift XCTest tests, including malformed engine output, stderr draining, login
   commands, crash handling, cancellation and force-stop of a SIGTERM-ignoring fixture.
 - **PASS:** Ruff on changed Python files, shellcheck on the native build script, and diff checks.
 - **PASS:** latest Intel release app built at `dist/native/BoardVault.app`.
@@ -21,7 +38,7 @@ were read, and no Telegram network operation was performed.
   Tahoe Mac, completed fixture scan/organize/undo, restored original bytes/state, and exited cleanly.
   All checks in `build/native-smoke-72f0lct5/ui-smoke.json` passed. Download, Settings, Organize and
   Library window captures were inspected; system materials and controls render correctly.
-- **PASS:** refreshed `dist/BoardVault-native.dmg` built from the final application sources in the
+- **Earlier build PASS:** `dist/BoardVault-native.dmg` built from the M1–M8 sources in the
   user's desktop Terminal on 2026-10-04 at 22:04. The app signature and binary checks passed again.
 - **PASS:** M1–M8 have separate local milestone commits on `feat/native-swiftui`. M7 and M8 use
   the user-authorized per-command `commit.gpgsign=false` override because the configured SSH
@@ -32,8 +49,8 @@ were read, and no Telegram network operation was performed.
 - The managed execution environment could not launch AppKit (`_RegisterApplication` abort) or
   create disk images (`Device not configured`). The subsequent normal desktop Terminal run
   succeeded for both. Earlier failed reports remain historical evidence, not current build blockers.
-- **Real Telegram acceptance pending:** fake clients and mock processes cover login and downloads;
-  no real account login or channel download was attempted. `.env` and Keychain reads are explicitly
+- **Fresh-login acceptance pending:** fake clients and mock processes cover login prompts.
+  Real channel download was confirmed by the user; fresh account login was not separately confirmed. `.env` and Keychain reads are explicitly
   prohibited in the current profile. The user must perform real-account acceptance in the app.
 - **Manual platform checks pending:** real Keychain storage/access, Quick Look interaction,
   delivered notifications, keyboard/VoiceOver behavior, and execution on an actual macOS 13 Mac.

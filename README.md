@@ -167,7 +167,10 @@ In the native app:
 - **Settings → Account:** save API ID/hash to Keychain, or explicitly select a legacy `.env` using
   **Import legacy .env…**. Launching the app does not read credentials. Log in uses phone/code/2FA
   sheets; Log out invalidates the shared Telegram session after confirmation.
-- **Download:** select channels, Apple/all files, optional keywords, scan limit, and resume.
+- **Download:** select channels, Apple/all files, optional search terms, scan limit, and resume.
+  Search requires every whole word in the filename/caption: `MacBook Pro M5` excludes Air, M4,
+  and M50 results. Joined `MacBookPro` and `M5Pro` names are recognized. Library uses the same
+  matching rules on filenames. This is text matching, not a verified board-to-processor database.
   **⌘R** starts; **⌘.** stops; **⌘,** opens Settings. Speed is aggregate transferred bytes over elapsed
   time; ETA describes the current file because Telegram does not supply a full filtered-run size.
 - **Organize:** scan first, review the file/category/destination table, then confirm Organize.
@@ -184,8 +187,8 @@ Native operations serialize access to shared state; the older CLI/Qt do not hono
 Native downloads require a filesystem supporting hard links (the default APFS location does).
 
 **Acceptance limitation:** automated login/download checks use fake Telegram clients and mock
-sidecars. A real Telegram login and channel download remain a user-run acceptance step; no real
-credentials or sessions were accessed. Keychain integration, Quick Look interaction, and delivered
+sidecars. The user confirmed a real channel download with live progress and completion on 2026-10-05.
+The agent has not accessed credentials or sessions; fresh-login prompts remain a manual check. Keychain integration, Quick Look interaction, and delivered
 notifications require manual desktop checks. An interrupted organizer with conflicting copies
 stops for recovery rather than overwriting either copy.
 

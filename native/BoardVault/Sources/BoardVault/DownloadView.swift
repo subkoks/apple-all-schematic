@@ -45,7 +45,9 @@ struct DownloadView: View {
                         Text("Apple only").tag(true)
                         Text("All files").tag(false)
                     }.pickerStyle(.segmented)
-                    TextField("Keywords (optional)", text: $model.keywords)
+                    TextField("Search, e.g. MacBook Pro M5", text: $model.keywords)
+                    Text("All words must match. M5 won’t match M50.")
+                        .font(.caption).foregroundStyle(.secondary)
                     HStack {
                         Text("Message limit")
                         TextField("0 = all", value: $model.limit, format: .number).frame(maxWidth: Layout.logHeight)

@@ -180,6 +180,7 @@ async def operation(args, protocol: Protocol, client_factory=None):
                     args.resume,
                     protocol.progress,
                     safe_files=True,
+                    exact_keywords=True,
                 )
         finally:
             await client.disconnect()
