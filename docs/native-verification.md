@@ -9,6 +9,10 @@ authorized session download; it does not establish that fresh phone/code/2FA pro
 
 ## Compact download layout — 2026-10-05
 
+Build 20006 starts the sidebar Activity log collapsed; its joined log text and ScrollView are
+created only while expanded. Swift tests and release bundle checks cover this update; desktop
+visual acceptance remains pending.
+
 Build 20005 adds a prominent top search field and selectable Any/All/Phrase matching, field scope,
 and file-format filters. The default is now Any word to recover broader results while retaining
 whole-term boundaries. Progress is one row per channel; the activity log is in the sidebar.

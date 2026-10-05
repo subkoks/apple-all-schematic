@@ -8,6 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- The native sidebar Activity log now starts collapsed and renders its entries only while open.
 - Native Download search modes (Any word by default, All words, Exact phrase), filename/caption
   scope, and PDF/boardview/archive/firmware filters. Board numbers remain whole terms.
 - A prominent top search field, single-row download progress, sidebar Activity log, persistent

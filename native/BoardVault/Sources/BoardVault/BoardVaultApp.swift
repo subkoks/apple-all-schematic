@@ -48,6 +48,7 @@ struct BoardVaultApp: App {
 
 struct MainView: View {
     @ObservedObject var model: AppModel
+    @State private var showActivityLog = false
     private let sections = [("Download", "arrow.down.circle"), ("Organize", "tray.2"),
                             ("Library", "books.vertical"), ("Settings", "gearshape")]
     var body: some View {
@@ -58,20 +59,25 @@ struct MainView: View {
                 }
                 .frame(height: Layout.sidebarNavigationHeight)
                 Divider()
-                VStack(alignment: .leading, spacing: Layout.compact) {
+                DisclosureGroup(isExpanded: $showActivityLog) {
+                    if showActivityLog {
+                        ScrollView {
+                            Text(model.logs.isEmpty ? "No activity yet." : model.logs.joined(separator: "\n"))
+                                .font(.system(.caption2, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(maxHeight: .infinity)
+                    }
+                } label: {
                     Label("Activity log", systemImage: "text.alignleft")
                         .font(.caption).foregroundStyle(.secondary)
-                    ScrollView {
-                        Text(model.logs.isEmpty ? "No activity yet." : model.logs.joined(separator: "\n"))
-                            .font(.system(.caption2, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
                 }
                 .padding(.horizontal, Layout.compact)
                 .padding(.top, Layout.compact)
-                .frame(maxHeight: .infinity)
+                .frame(maxHeight: showActivityLog ? .infinity : nil, alignment: .top)
+                if !showActivityLog { Spacer(minLength: 0) }
                 Divider()
                 VStack(alignment: .leading) {
                     Text("BoardVault").font(.headline)

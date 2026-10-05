@@ -81,7 +81,7 @@ cat > "${APP}/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>BoardVault</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>2.0.0</string>
-<key>CFBundleVersion</key><string>20005</string>
+<key>CFBundleVersion</key><string>20006</string>
 <key>CFBundleIconFile</key><string>app.icns</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSHighResolutionCapable</key><true/>
