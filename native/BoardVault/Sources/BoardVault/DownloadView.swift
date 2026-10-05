@@ -60,7 +60,7 @@ struct DownloadView: View {
                 .frame(minWidth: Layout.sheetWidth, maxWidth: Layout.sheetWidth)
                 .disabled(model.running)
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Layout.spacing) {
+                    VStack(alignment: .leading, spacing: Layout.compact) {
                         HStack {
                             Text("\(model.totalFiles) files").font(.headline)
                             Spacer()
@@ -75,17 +75,7 @@ struct DownloadView: View {
                             }.frame(maxWidth: .infinity).padding(.vertical, Layout.inset)
                         }
                         ForEach(model.transfers) { transfer in
-                            VStack(alignment: .leading, spacing: Layout.compact) {
-                                HStack {
-                                    Text(transfer.channel).fontWeight(.medium)
-                                    Spacer()
-                                    if transfer.finished { Image(systemName: "checkmark.circle") }
-                                }
-                                Text(transfer.filename).lineLimit(1).font(.caption).foregroundStyle(.secondary)
-                                ProgressView(value: transfer.fraction).accessibilityLabel("Download progress for \(transfer.channel)")
-                                Text("\(transfer.downloaded) downloaded · \(transfer.skipped) skipped · \(transfer.errors) errors")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }.padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: Layout.compact))
+                            TransferRow(transfer: transfer)
                         }
                     }.padding(.leading, Layout.spacing)
                 }
@@ -98,6 +88,43 @@ struct DownloadView: View {
             }
         }.padding(Layout.inset)
         .sheet(isPresented: $addingChannel) { AddChannelSheet(model: model) }
+    }
+}
+
+private struct TransferRow: View {
+    let transfer: Transfer
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Layout.transferRowSpacing) {
+            HStack(spacing: Layout.compact) {
+                HStack(spacing: Layout.transferIconSpacing) {
+                    Image(systemName: transfer.finished ? "checkmark.circle.fill" : "circle.dotted")
+                        .foregroundStyle(transfer.finished ? Color.green : Color.secondary)
+                        .accessibilityHidden(true)
+                    Text(transfer.channel).fontWeight(.medium).lineLimit(1)
+                }
+                .frame(width: Layout.transferNameWidth, alignment: .leading)
+                .help(transfer.channel)
+                Text(transfer.filename)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .help(transfer.filename)
+                Text("\(transfer.downloaded) new · \(transfer.skipped) skipped · \(transfer.errors) errors")
+                    .foregroundStyle(transfer.errors > 0 ? Color.red : Color.secondary)
+                    .monospacedDigit()
+                    .fixedSize()
+            }
+            .font(.caption)
+            ProgressView(value: transfer.fraction)
+                .controlSize(.mini)
+                .accessibilityLabel("Download progress for \(transfer.channel)")
+        }
+        .padding(.vertical, Layout.transferRowSpacing)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(transfer.channel): \(transfer.filename), \(transfer.downloaded) downloaded, \(transfer.skipped) skipped, \(transfer.errors) errors")
+        Divider()
     }
 }
 

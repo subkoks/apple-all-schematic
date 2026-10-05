@@ -7,6 +7,15 @@ The user subsequently confirmed a real download in the installed app on 2026-10-
 show live progress, then completion with 3 downloaded, 41 skipped and 0 errors. This verifies an
 authorized session download; it does not establish that fresh phone/code/2FA prompts were tested.
 
+## Compact download layout — 2026-10-05
+
+Build 20004 replaces tall per-channel progress cards with compact rows (channel, truncated
+filename, new/skipped/error counts, thin progress bar). Hover shows full channel/filename.
+The fixture-only UI smoke mode now renders every configured channel in Download captures.
+Swift build and 13 tests pass; the packaged app passes signature and x86_64/macOS 13 binary
+checks. A new desktop screenshot and DMG refresh are still needed from a normal terminal.
+`dist/BoardVault-native.dmg` remains an earlier artifact.
+
 ## Channel catalogue expansion — 2026-10-05
 
 Build 20003 at `dist/native/BoardVault.app` embeds 22 channels, including 10 optional additions.

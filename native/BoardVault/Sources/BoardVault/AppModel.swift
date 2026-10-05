@@ -36,6 +36,9 @@ enum Layout {
     static let logHeight: CGFloat = 140
     static let maxLogEntries = 300
     static let maxMessages = 1_000_000
+    static let transferNameWidth: CGFloat = 190
+    static let transferRowSpacing: CGFloat = 3
+    static let transferIconSpacing: CGFloat = 4
 }
 
 @MainActor

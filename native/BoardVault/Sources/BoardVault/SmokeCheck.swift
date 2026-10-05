@@ -10,6 +10,18 @@ extension AppModel {
         var checks: [String: Bool] = [:]
         do {
             try FileManager.default.createDirectory(at: dataRoot, withIntermediateDirectories: true)
+            // Show the full catalogue in fixture captures so row density can be reviewed.
+            struct Catalogue: Decodable { let channels: [String: [String]] }
+            if let url = Bundle.main.resourceURL?.appendingPathComponent("config.json"),
+               let data = try? Data(contentsOf: url),
+               let catalogue = try? JSONDecoder().decode(Catalogue.self, from: data) {
+                transfers = catalogue.channels.keys.sorted().flatMap { category in
+                    (catalogue.channels[category] ?? []).map { Transfer(channel: $0) }
+                }
+                checks["compact_rows"] = !transfers.isEmpty && transfers.count == catalogue.channels.values.reduce(0) { $0 + $1.count }
+            } else {
+                checks["compact_rows"] = false
+            }
             for appearance in ["light", "dark"] {
                 theme = appearance
                 for page in ["Download", "Settings"] {
@@ -17,6 +29,7 @@ extension AppModel {
                     checks["capture-\(page)-\(appearance)"] = await captureSafely(name: "\(page)-\(appearance)")
                 }
             }
+            transfers = []
             section = "Organize"
             start("scan")
             await task?.value

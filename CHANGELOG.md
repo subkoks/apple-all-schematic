@@ -8,6 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Compact native download progress rows display each channel, current file, counts, and a thin
+  progress bar; the fixture smoke capture now exercises the full channel catalogue.
 - Ten optional native channel additions with documented source evidence and one-time migration
   preserving selections, custom channels and subsequent removals. New entries start unchecked.
 
