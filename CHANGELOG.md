@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Native Download search modes (Any word by default, All words, Exact phrase), filename/caption
+  scope, and PDF/boardview/archive/firmware filters. Board numbers remain whole terms.
+- A prominent top search field, single-row download progress, sidebar Activity log, persistent
+  channel ordering controls, and approximate public subscriber counts where available.
 - Compact native download progress rows display each channel, current file, counts, and a thin
   progress bar; the fixture smoke capture now exercises the full channel catalogue.
 - Ten optional native channel additions with documented source evidence and one-time migration

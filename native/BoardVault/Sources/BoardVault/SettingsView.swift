@@ -107,7 +107,8 @@ extension AppModel {
         guard ProcessInfo.processInfo.environment["BOARDVAULT_FIXTURE_ROOT"] == nil else { return }
         let preferences: [String: Any] = ["downloadFolder": downloadFolder, "organizedFolder": organizedFolder,
             "theme": theme, "appleOnly": appleOnly, "resume": resume, "limit": limit,
-            "reveal": revealOnComplete, "notifications": notifications]
+            "reveal": revealOnComplete, "notifications": notifications, "searchMode": searchMode,
+            "searchScope": searchScope, "fileTypes": fileTypes.sorted()]
         UserDefaults.standard.set(preferences, forKey: "native.preferences")
         saveChannels()
     }
@@ -122,6 +123,12 @@ extension AppModel {
         limit = prefs["limit"] as? Int ?? 0
         revealOnComplete = prefs["reveal"] as? Bool ?? false
         notifications = prefs["notifications"] as? Bool ?? false
+        let savedMode = prefs["searchMode"] as? String ?? "any"
+        searchMode = ["any", "all", "phrase"].contains(savedMode) ? savedMode : "any"
+        let savedScope = prefs["searchScope"] as? String ?? "both"
+        searchScope = ["both", "filename", "caption"].contains(savedScope) ? savedScope : "both"
+        let savedTypes = Set(prefs["fileTypes"] as? [String] ?? ["pdf", "boardview", "archive", "firmware"])
+        fileTypes = savedTypes.intersection(["pdf", "boardview", "archive", "firmware"])
     }
     func requestNotifications() {
         guard Bundle.main.bundleIdentifier != nil else { return }

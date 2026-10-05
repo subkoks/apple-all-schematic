@@ -170,10 +170,15 @@ In the native app:
 - **Settings → Account:** save API ID/hash to Keychain, or explicitly select a legacy `.env` using
   **Import legacy .env…**. Launching the app does not read credentials. Log in uses phone/code/2FA
   sheets; Log out invalidates the shared Telegram session after confirmation.
-- **Download:** select channels, Apple/all files, optional search terms, scan limit, and resume.
-  Search requires every whole word in the filename/caption: `MacBook Pro M5` excludes Air, M4,
-  and M50 results. Joined `MacBookPro` and `M5Pro` names are recognized. Library uses the same
-  matching rules on filenames. This is text matching, not a verified board-to-processor database.
+- **Download:** select and reorder channels, Apple/all files, optional search terms, scan limit,
+  and resume. The top search field defaults to **Any word** for wider results. **Search options**
+  offers All words, Exact phrase, filename/caption scope, and PDF/boardview/archive/firmware
+  filters. Whole terms keep `M5` from matching `M50`; joined `MacBookPro` and `M5Pro` are
+  recognized. Archives are filtered by their own extension, not their contents. Public subscriber
+  counts, when available, are approximate and can be refreshed beside Channels. Library search
+  still requires all whole words in filenames. This is text matching, not a verified
+  board-to-processor database. Channel progress appears in one row, and the activity log is
+  below Settings in the sidebar.
   **⌘R** starts; **⌘.** stops; **⌘,** opens Settings. Speed is aggregate transferred bytes over elapsed
   time; ETA describes the current file because Telegram does not supply a full filtered-run size.
 - **Organize:** scan first, review the file/category/destination table, then confirm Organize.

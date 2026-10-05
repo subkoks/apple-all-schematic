@@ -27,7 +27,8 @@ enum Layout {
     static let spacing: CGFloat = 16
     static let compact: CGFloat = 8
     static let inset: CGFloat = 24
-    static let sidebar: CGFloat = 180
+    static let sidebar: CGFloat = 220
+    static let sidebarNavigationHeight: CGFloat = 190
     static let windowWidth: CGFloat = 980
     static let windowHeight: CGFloat = 680
     static let minWidth: CGFloat = 820
@@ -37,6 +38,9 @@ enum Layout {
     static let maxLogEntries = 300
     static let maxMessages = 1_000_000
     static let transferNameWidth: CGFloat = 190
+    static let transferProgressWidth: CGFloat = 110
+    static let transferCountWidth: CGFloat = 48
+    static let sidebarLogHeight: CGFloat = 220
     static let transferRowSpacing: CGFloat = 3
     static let transferIconSpacing: CGFloat = 4
 }
@@ -50,6 +54,10 @@ final class AppModel: ObservableObject {
     @Published var resume = true
     @Published var limit = 0
     @Published var keywords = ""
+    @Published var searchMode = "any"
+    @Published var searchScope = "both"
+    @Published var fileTypes: Set<String> = ["pdf", "boardview", "archive", "firmware"]
+    @Published var followerCounts: [String: Int] = [:]
     @Published var running = false
     @Published var transfers: [Transfer] = []
     @Published var logs: [String] = []
@@ -155,7 +163,14 @@ final class AppModel: ObservableObject {
         saveChannels()
     }
 
-    var canStart: Bool { !running && channels.contains(where: \.selected) }
+    func moveChannel(_ name: String, by offset: Int) {
+        guard !running, let index = channels.firstIndex(where: { $0.name == name }),
+              channels.indices.contains(index + offset) else { return }
+        channels.swapAt(index, index + offset)
+        saveChannels()
+    }
+
+    var canStart: Bool { !running && !fileTypes.isEmpty && channels.contains(where: \.selected) }
     var totalFiles: Int { transfers.reduce(0) { $0 + $1.downloaded } }
     var rateText: String { ByteCountFormatter.string(fromByteCount: Int64(speed), countStyle: .file) + "/s" }
     var etaText: String {
@@ -200,6 +215,8 @@ final class AppModel: ObservableObject {
                     if !keywords.trimmingCharacters(in: .whitespaces).isEmpty {
                         arguments += ["--filter"] + keywords.split(separator: " ").map(String.init)
                     }
+                    arguments += ["--search-mode", searchMode, "--search-scope", searchScope]
+                    arguments += ["--file-types"] + fileTypes.sorted()
                     arguments += ["--channels"] + channels.filter(\.selected).map(\.name)
                 }
                 var environment: [String: String] = [:]

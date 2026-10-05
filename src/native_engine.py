@@ -143,6 +143,17 @@ async def operation(args, protocol: Protocol, client_factory=None):
         raise ValueError("Invalid limit")
     channels = validate_channel_names(args.channels or sum(scraper.CHANNELS.values(), []))
     keywords = validate_keywords(args.filter) if args.filter else None
+    from native_search import FILE_TYPES, SEARCH_MODES, SEARCH_SCOPES
+
+    search_mode = getattr(args, "search_mode", "any")
+    search_scope = getattr(args, "search_scope", "both")
+    file_types = getattr(args, "file_types", None)
+    if search_mode not in SEARCH_MODES or search_scope not in SEARCH_SCOPES:
+        raise ValueError("Invalid search options")
+    if file_types is not None and (
+        not file_types or any(item not in FILE_TYPES for item in file_types)
+    ):
+        raise ValueError("Invalid file types")
     root.mkdir(parents=True, exist_ok=True)
     # Native processes serialize shared state/session access. Qt users must close Qt first.
     with (root / "native-engine.lock").open("a") as lock:
@@ -181,6 +192,9 @@ async def operation(args, protocol: Protocol, client_factory=None):
                     protocol.progress,
                     safe_files=True,
                     exact_keywords=True,
+                    search_mode=search_mode,
+                    search_scope=search_scope,
+                    file_types=file_types,
                 )
         finally:
             await client.disconnect()

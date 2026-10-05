@@ -254,6 +254,9 @@ async def process_channel(
     *,
     safe_files: bool = False,
     exact_keywords: bool = False,
+    search_mode: str | None = None,
+    search_scope: str = "both",
+    file_types: list[str] | None = None,
 ):
     # Optional structured-event sink for GUI/embedding. When None, behaviour is
     # identical to the CLI (print-only). Sink errors never leak into the loop.
@@ -293,6 +296,11 @@ async def process_channel(
 
         if not has_allowed_ext(filename):
             continue
+        if file_types is not None:
+            from native_search import matching_type
+
+            if not matching_type(filename, file_types):
+                continue
 
         caption = message.message or ""
         state_key = f"{channel}:{message.id}"
@@ -307,10 +315,12 @@ async def process_channel(
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()
-            if exact_keywords:
-                from native_search import matches
+            if search_mode is not None or exact_keywords:
+                from native_search import matching_fields
 
-                if not matches(text, " ".join(keyword_filter)):
+                if not matching_fields(
+                    filename, caption, " ".join(keyword_filter), search_mode or "all", search_scope
+                ):
                     continue
             elif not any(k.lower() in text for k in keyword_filter):
                 continue
@@ -480,6 +490,24 @@ async def main(args):
 def parse_args():
     p = argparse.ArgumentParser(description="Telegram Apple schematic downloader")
     p.add_argument("--json", action="store_true", help="JSON-lines sidecar protocol")
+    p.add_argument(
+        "--search-mode",
+        choices=("any", "all", "phrase"),
+        default="any",
+        help="Machine-mode query behavior",
+    )
+    p.add_argument(
+        "--search-scope",
+        choices=("both", "filename", "caption"),
+        default="both",
+        help="Machine-mode fields to search",
+    )
+    p.add_argument(
+        "--file-types",
+        nargs="+",
+        choices=("pdf", "boardview", "archive", "firmware"),
+        help="Machine-mode file groups to download",
+    )
     p.add_argument(
         "--operation",
         default="download",

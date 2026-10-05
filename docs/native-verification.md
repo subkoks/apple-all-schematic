@@ -9,6 +9,19 @@ authorized session download; it does not establish that fresh phone/code/2FA pro
 
 ## Compact download layout — 2026-10-05
 
+Build 20005 adds a prominent top search field and selectable Any/All/Phrase matching, field scope,
+and file-format filters. The default is now Any word to recover broader results while retaining
+whole-term boundaries. Progress is one row per channel; the activity log is in the sidebar.
+Channel menus persist up/down ordering. Approximate subscriber counts are fetched from public
+Telegram previews without using the account session; channels without a readable public count
+show no number. Python: 158 tests plus 56 subtests; Swift: 14 tests. Ruff, shellcheck, x86_64
+release bundle validation, signature verification, and packaged-engine fixture smoke pass. The
+latest app is `dist/native/BoardVault.app`; DMG creation failed here with `hdiutil: Device not
+configured`, so `dist/BoardVault-native.dmg` is older. The new UI has not had a desktop visual
+smoke check or a real-account download in this build.
+
+### Earlier compact layout
+
 Build 20004 replaces tall per-channel progress cards with compact rows (channel, truncated
 filename, new/skipped/error counts, thin progress bar). Hover shows full channel/filename.
 The fixture-only UI smoke mode now renders every configured channel in Download captures.
@@ -43,9 +56,9 @@ rebuild it from normal Terminal to include build 20003.
 
 ## Verified
 
-- **PASS:** 155 Python tests, plus 56 subtests. Run from `tests/` with dotenv disabled to avoid
+- **PASS:** 158 Python tests, plus 56 subtests. Run from `tests/` with dotenv disabled to avoid
   pytest traversing the denied repo `.env` during collection.
-- **PASS:** 13 Swift XCTest tests, including malformed engine output, stderr draining, login
+- **PASS:** 14 Swift XCTest tests, including malformed engine output, stderr draining, login
   commands, crash handling, cancellation and force-stop of a SIGTERM-ignoring fixture.
 - **PASS:** Ruff on changed Python files, shellcheck on the native build script, and diff checks.
 - **PASS:** latest Intel release app built at `dist/native/BoardVault.app`.

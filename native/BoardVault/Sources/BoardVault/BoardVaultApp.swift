@@ -52,16 +52,33 @@ struct MainView: View {
                             ("Library", "books.vertical"), ("Settings", "gearshape")]
     var body: some View {
         NavigationSplitView {
-            List(selection: $model.section) {
-                ForEach(sections, id: \.0) { name, icon in Label(name, systemImage: icon).tag(name) }
-            }
-            .navigationSplitViewColumnWidth(min: Layout.sidebar, ideal: Layout.sidebar)
-            .safeAreaInset(edge: .bottom) {
+            VStack(alignment: .leading, spacing: 0) {
+                List(selection: $model.section) {
+                    ForEach(sections, id: \.0) { name, icon in Label(name, systemImage: icon).tag(name) }
+                }
+                .frame(height: Layout.sidebarNavigationHeight)
+                Divider()
+                VStack(alignment: .leading, spacing: Layout.compact) {
+                    Label("Activity log", systemImage: "text.alignleft")
+                        .font(.caption).foregroundStyle(.secondary)
+                    ScrollView {
+                        Text(model.logs.isEmpty ? "No activity yet." : model.logs.joined(separator: "\n"))
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.horizontal, Layout.compact)
+                .padding(.top, Layout.compact)
+                .frame(maxHeight: .infinity)
+                Divider()
                 VStack(alignment: .leading) {
                     Text("BoardVault").font(.headline)
                     Text("Schematics, in order.").font(.caption).foregroundStyle(.secondary)
                 }.padding()
             }
+            .navigationSplitViewColumnWidth(min: Layout.sidebar, ideal: Layout.sidebar)
         } detail: {
             VStack(spacing: 0) {
                 if let error = model.error {
@@ -91,4 +108,3 @@ struct MainView: View {
         }
     }
 }
-
