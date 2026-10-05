@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Native SwiftUI macOS frontend in `native/BoardVault/` (macOS 13+, Intel first), preserving
+  the existing Qt GUI: Download, Organize, Library, Settings, login sheets, keyboard commands,
+  Dock progress, opt-in completion notifications, and Keychain credential storage.
+- Opt-in Python `--json` sidecar protocol with validated stdin commands, redacted events,
+  cancellable login/downloads, exact organization previews, and journaled undo.
+- Native-only safe file publishing, incomplete-download checks, and atomic state writes.
+- Isolated portable Python packaging, pinned build dependencies, architecture/minimum-OS checks,
+  and `scripts/build_native_app.sh` producing `dist/BoardVault-native.dmg` without replacing Qt output.
+- Python protocol/organizer tests, Swift mock-process tests, and a credential-free UI smoke check.
+  Real Telegram and Keychain acceptance remain pending manual verification.
+
 - Repository community-health files: `SECURITY.md`, `CONTRIBUTING.md`,
   this `CHANGELOG.md`, `.github/CODEOWNERS`, `.github/ISSUE_TEMPLATE/*`,
   `.github/pull_request_template.md`, and `.github/dependabot.yml`.

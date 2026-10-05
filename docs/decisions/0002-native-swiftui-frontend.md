@@ -23,6 +23,11 @@ Status: Accepted; implementation and acceptance tracked below.
 - Cancellation: stdin command, bounded grace period, SIGTERM fallback; unexpected
   process exit, malformed output and missing terminal event surface as errors.
 - Dev Python is repo `.venv` (uv); release engine is a PyInstaller onedir bundle.
+  [DECISION: portable release Python] The host Python dylib requires macOS 26.2.
+  Use `.venv-native-build` with a managed Python runtime and pinned requirements.
+  Exclude the builder's optional Homebrew OpenSSL libraries; retain Telethon's pyaes
+  fallback. Verify every bundled Mach-O has a macOS minimum <=13 and no external
+  non-system dylib references. Build caches and retained artifacts are repo-local.
 - Native state/session root in both modes:
   `~/Library/Application Support/subkoks/BoardVault/`; downloads default to
   `~/Downloads/BoardVault/`; library defaults to state-root/organized.
@@ -52,3 +57,25 @@ Run Python tests with `PYTHON_DOTENV_DISABLED=1`, isolated temporary roots and f
 clients; Swift tests with mock sidecars. Real Telegram credentials/session access
 requires separate approval. Build, launch and DMG checks do not imply a successful
 real-channel download. Final verified results belong in the implementation report.
+
+## Verification and remaining acceptance
+
+- Python fixture tests cover event redaction, command validation, phone/code/2FA sequencing,
+  cancellation, real downloader callbacks with a fake client, resume/collisions/incomplete files,
+  preview changes, symlinks, organize/undo, and preservation of newer state entries.
+- Swift tests cover pipe framing, malformed output, stderr backpressure, missing terminal events,
+  login commands, cancellation fallback, view-model state, credential parsing and library indexing.
+- The packaged app has launched on this Intel Tahoe Mac and completed fixture scan/organize/undo.
+  Mach-O checks verify deployment metadata; they are not an actual Ventura runtime test.
+- Real Telegram login/download, Keychain access, Quick Look interaction, delivered notifications,
+  and macOS 13 runtime acceptance remain manual checks. Credential access is prohibited in the
+  current agent permission profile; no attempt is made to bypass it.
+- Native organization retains journals on errors. A crash leaving conflicting copies requires
+  manual recovery; files are not overwritten to make an undo appear successful.
+
+[DECISION: finish the final two local milestone commits with a per-command unsigned override,
+as authorized by the user, because the configured SSH signing key is inaccessible. Preserve
+persistent Git settings and do not access the key.]
+
+See [native-verification.md](../native-verification.md) for final build, desktop smoke-test and
+DMG evidence, plus the remaining real-account and platform acceptance checks.

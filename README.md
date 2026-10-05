@@ -1,6 +1,6 @@
 # BoardVault
 
-**Apple schematic & boardview downloader** — a native macOS app (and CLI) that downloads and
+**Apple schematic & boardview downloader** — macOS desktop apps and a CLI that downloads and
 organizes Apple device schematics and boardview files from public Telegram channels. Clean
 originals, no watermarks.
 
@@ -15,14 +15,18 @@ originals, no watermarks.
 
 ## What it is
 
-BoardVault wraps a battle-tested Telegram scraper in two front-ends:
+BoardVault exposes the Python Telegram engine through three front-ends:
 
-- **Desktop app (macOS):** a clean PySide6 GUI — pick channels, filter, watch live per-channel
+- **Existing desktop app (macOS):** a PySide6 GUI — pick channels, filter, watch live per-channel
   progress, then sort everything into a tidy `Apple/<product>` and `<brand>` library. System/Dark/Light
   themes, guided Telegram login (no terminal), and a configurable download folder.
+- **Native preview (macOS 13+, Intel):** SwiftUI + AppKit, with a separate Python sidecar.
+  Download, Organize, Library, Keychain settings, keyboard commands, Dock progress, and notifications.
 - **CLI:** the original single-file scraper for power users, automation, and headless/cloud runs.
 
-Both share the same engine, state file, and Telegram session, so you can switch freely.
+The installed desktop apps share the Application Support state/session location. The CLI and Qt
+development mode retain repo `data/`; native development uses Application Support. Close other
+BoardVault clients before accessing shared state. No sessions are copied automatically.
 
 ---
 
@@ -117,6 +121,75 @@ pip install -e ".[build]"          # packaging deps (pyinstaller, dmgbuild)
 ```
 
 The app icon is generated with `./scripts/make_icon.sh` (built-in `sips`/`iconutil`).
+
+## Native SwiftUI preview
+
+The existing PySide6 GUI and its packaging scripts remain unchanged. The native source is in
+`native/BoardVault/` with no third-party Swift dependencies. It targets macOS 13 and Intel x86_64;
+actual execution has been checked on this Intel Tahoe Mac, not on a separate Ventura installation.
+
+```bash
+# Development (uses the repo .venv Python sidecar; create it with uv venv if absent)
+uv pip install --python .venv/bin/python '.[dev]'
+swift run --package-path native/BoardVault BoardVault
+
+# Native tests, without loading .env or accessing Telegram
+(cd tests && PYTHON_DOTENV_DISABLED=1 ../.venv/bin/python -m pytest -q -c ../pyproject.toml --rootdir=. --confcutdir=. .)
+swift test --package-path native/BoardVault --arch x86_64
+
+# Build a separate native app and DMG
+./scripts/build_native_app.sh
+open dist/native/BoardVault.app
+
+# Fixture-only app launch, screenshots, scan / organize / undo
+.venv/bin/python scripts/smoke_native_app.py
+# Offline packaged-engine check (no desktop access required)
+.venv/bin/python scripts/smoke_native_engine.py
+```
+
+The build creates `.venv-native-build/` with a managed portable Python runtime and pinned build
+requirements. It does not reuse a host Python that requires a newer macOS. All bundled Mach-O
+binaries are checked for architecture, minimum OS, and external library dependencies before
+packaging. Existing output is retained under `build/native.*/previous-*`.
+`ARCH` in `scripts/build_native_app.sh` controls the architecture; `universal2` also requires a
+pre-provisioned universal Python environment and universal binary dependencies.
+
+Use `./scripts/build_native_app.sh --app-only` when disk-image services are unavailable. In that
+mode, any existing DMG remains an earlier artifact. See the current
+[verification report](docs/native-verification.md) before distributing a local build.
+
+Outputs: **`dist/native/BoardVault.app`** and **`dist/BoardVault-native.dmg`**. These are locally
+ad-hoc signed, not Developer ID signed or notarized. The native bundle identifier is
+`com.subkoks.boardvault.native`. Keep it in a separate folder if retaining both desktop apps.
+
+In the native app:
+
+- **Settings → Account:** save API ID/hash to Keychain, or explicitly select a legacy `.env` using
+  **Import legacy .env…**. Launching the app does not read credentials. Log in uses phone/code/2FA
+  sheets; Log out invalidates the shared Telegram session after confirmation.
+- **Download:** select channels, Apple/all files, optional keywords, scan limit, and resume.
+  **⌘R** starts; **⌘.** stops; **⌘,** opens Settings. Speed is aggregate transferred bytes over elapsed
+  time; ETA describes the current file because Telegram does not supply a full filtered-run size.
+- **Organize:** scan first, review the file/category/destination table, then confirm Organize.
+  A changed preview is rejected. Undo reverses the last native batch without discarding newer
+  state entries. Native and legacy GUI undo journals are separate.
+- **Library:** browse product/brand folders, search filenames, Quick Look, Open, or Reveal in Finder.
+- **Settings:** choose download/library folders, System/Dark/Light appearance, reveal-on-completion,
+  and opt-in notifications. Native preferences are stored separately from Qt preferences.
+
+State/session: `~/Library/Application Support/subkoks/BoardVault/`; downloads:
+`~/Downloads/BoardVault/`; library: the state root's `organized/`. JSON mode accepts explicit
+`--data-dir`, `--download-dir`, and `--organized-dir` for deliberate legacy reuse or isolated tests.
+Native operations serialize access to shared state; the older CLI/Qt do not honor that lock.
+Native downloads require a filesystem supporting hard links (the default APFS location does).
+
+**Acceptance limitation:** automated login/download checks use fake Telegram clients and mock
+sidecars. A real Telegram login and channel download remain a user-run acceptance step; no real
+credentials or sessions were accessed. Keychain integration, Quick Look interaction, and delivered
+notifications require manual desktop checks. An interrupted organizer with conflicting copies
+stops for recovery rather than overwriting either copy.
+
+See [ADR 0002](docs/decisions/0002-native-swiftui-frontend.md) for the IPC contract and decisions.
 
 ## Troubleshooting
 
