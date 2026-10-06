@@ -1,21 +1,23 @@
 # BoardVault — User Guide
 
 BoardVault downloads Apple device schematics and boardviews from public Telegram channels and
-organizes them into a clean library. This guide covers the macOS app; the CLI is documented in the
+organizes them into a clean library. This guide covers the Qt macOS app. For SwiftUI, use the
+[native guide](NATIVE_USER_GUIDE.md); the CLI is documented in the
 [README](../README.md#cli).
 
 ## 1. Install
 
 1. Open `BoardVault.dmg` and drag **BoardVault** to **Applications**.
-2. First launch (unsigned app): **right-click → Open → Open**, or run
-   `xattr -dr com.apple.quarantine "/Applications/BoardVault.app"`.
+2. If macOS blocks a trusted download, attempt to launch it, then use System Settings →
+   Privacy & Security → **Open Anyway**, following
+   [Apple's instructions](https://support.apple.com/en-us/102445).
 
 ## 2. Get Telegram API credentials
 
 1. Visit **<https://my.telegram.org>** and log in with your Telegram phone number.
 2. Open **API development tools**, create an app (any name), and copy the **API ID** and **API Hash**.
 3. In BoardVault, open **Settings → Account**, paste both, and **Save credentials**. They are stored
-   locally in a `.env` file and never leave your machine.
+   locally in a `.env` file and used to connect to Telegram. Never share that file.
 
 ## 3. Download
 
@@ -51,7 +53,7 @@ reveal it with **Open**).
 
 ## Troubleshooting
 
-- **Gatekeeper blocks the app:** it's unsigned — use the right-click → Open step above.
+- **Gatekeeper blocks the app:** use the system approval steps above for a trusted download.
 - **Wrong login code / stuck login:** **Settings → Account → Log out**, then Start again.
 - **Channel won't resolve:** confirm the exact `@name` and that the channel is public or that you've
   joined it.

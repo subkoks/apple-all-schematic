@@ -14,7 +14,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env  # fill in TELEGRAM_API_ID / TELEGRAM_API_HASH
+cp .env.example .env  # fill in TG_API_ID / TG_API_HASH
 ```
 
 Never commit a real `.env` or session file.
@@ -43,6 +43,22 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - Python 3.11+; type hints on public functions.
 - Prefer `pathlib.Path` over `os.path`.
 - Use `ruff format` + `ruff check` if available locally.
+
+## Native SwiftUI development
+
+The native macOS interface is in `native/BoardVault/`. Keep Swift dependencies empty and
+Telegram logic in the Python sidecar. Use disposable fixtures for account, engine and organizer
+tests; do not use real credentials or sessions in automated checks.
+
+```bash
+pip install -e '.[dev]'
+PYTHON_DOTENV_DISABLED=1 python -m pytest -q
+swift test --package-path native/BoardVault --arch x86_64
+```
+
+Native release preparation uses `native/release.json` and
+[RELEASING_NATIVE.md](docs/RELEASING_NATIVE.md). A GitHub workflow file passing actionlint
+locally does not prove that its jobs have run on GitHub.
 
 ## Reporting bugs and feature requests
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
-py-modules = ["tg_schematic_downloader", "organize_downloads", "validation"]
+py-modules = ["tg_schematic_downloader", "organize_downloads", "validation", "native_engine", "native_organizer", "native_search"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

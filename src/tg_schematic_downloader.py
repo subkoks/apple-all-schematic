@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
@@ -29,7 +30,8 @@ for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, "reconfigure"):
         _stream.reconfigure(line_buffering=True)
 
-load_dotenv()
+if "--json" not in sys.argv:
+    load_dotenv()
 
 try:
     from telethon import TelegramClient
@@ -249,6 +251,12 @@ async def process_channel(
     limit: int | None,
     resume: bool,
     progress: Callable[[dict], None] | None = None,
+    *,
+    safe_files: bool = False,
+    exact_keywords: bool = False,
+    search_mode: str | None = None,
+    search_scope: str = "both",
+    file_types: list[str] | None = None,
 ):
     # Optional structured-event sink for GUI/embedding. When None, behaviour is
     # identical to the CLI (print-only). Sink errors never leak into the loop.
@@ -263,6 +271,10 @@ async def process_channel(
     emit({"type": "channel_start", "channel": channel})
 
     out_dir = DOWNLOAD_DIR / channel
+    if safe_files and (
+        out_dir.is_symlink() or not out_dir.resolve().is_relative_to(DOWNLOAD_DIR.resolve())
+    ):
+        raise ValueError("Unsafe download directory")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     downloaded = state["downloaded"]
@@ -284,11 +296,17 @@ async def process_channel(
 
         if not has_allowed_ext(filename):
             continue
+        if file_types is not None:
+            from native_search import matching_type
+
+            if not matching_type(filename, file_types):
+                continue
 
         caption = message.message or ""
         state_key = f"{channel}:{message.id}"
 
-        if resume and state_key in downloaded:
+        native_filtering = search_mode is not None or exact_keywords
+        if resume and state_key in downloaded and not native_filtering:
             skipped += 1
             continue
 
@@ -298,8 +316,19 @@ async def process_channel(
 
         if keyword_filter:
             text = f"{filename} {caption}".lower()
-            if not any(k.lower() in text for k in keyword_filter):
+            if native_filtering:
+                from native_search import matching_fields
+
+                if not matching_fields(
+                    filename, caption, " ".join(keyword_filter), search_mode or "all", search_scope
+                ):
+                    continue
+            elif not any(k.lower() in text for k in keyword_filter):
                 continue
+
+        if resume and state_key in downloaded:
+            skipped += 1
+            continue
 
         dest = out_dir / filename
 
@@ -309,6 +338,15 @@ async def process_channel(
             suffix = dest.suffix
             dest = out_dir / f"{stem}_{message.id}{suffix}"
 
+        if safe_files:
+            counter = 0
+            while dest.exists() or dest.is_symlink():
+                counter += 1
+                dest = (
+                    out_dir / f"{Path(filename).stem}_{message.id}_{counter}{Path(filename).suffix}"
+                )
+
+        temporary = None
         try:
             print(f"  ↓ {filename}")
             emit({"type": "file_start", "channel": channel, "filename": filename})
@@ -327,14 +365,30 @@ async def process_channel(
                         }
                     )
 
+            if safe_files:
+                fd, name = tempfile.mkstemp(prefix=".boardvault-", suffix=".part", dir=out_dir)
+                os.close(fd)
+                temporary = Path(name)
             await client.download_media(
                 message,
-                file=str(dest),
+                file=str(temporary or dest),
                 progress_callback=byte_cb,
             )
+            if temporary is not None:
+                document = getattr(getattr(message, "media", None), "document", None)
+                expected = getattr(document, "size", None)
+                if expected is not None and temporary.stat().st_size != expected:
+                    raise ValueError("Incomplete download")
+                # Same-directory hard link publishes atomically without overwriting.
+                os.link(temporary, dest)
             downloaded[state_key] = str(dest)
             count += 1
-            await save_state(state)
+            if safe_files:
+                from native_organizer import atomic_json
+
+                atomic_json(STATE_FILE, state)
+            else:
+                await save_state(state)
             emit(
                 {
                     "type": "file_done",
@@ -355,6 +409,9 @@ async def process_channel(
                     "error": str(e),
                 }
             )
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     print(f"  Done — {count} downloaded, {skipped} skipped, {errors} errors")
     emit(
@@ -437,6 +494,34 @@ async def main(args):
 
 def parse_args():
     p = argparse.ArgumentParser(description="Telegram Apple schematic downloader")
+    p.add_argument("--json", action="store_true", help="JSON-lines sidecar protocol")
+    p.add_argument(
+        "--search-mode",
+        choices=("any", "all", "phrase"),
+        default="any",
+        help="Machine-mode query behavior",
+    )
+    p.add_argument(
+        "--search-scope",
+        choices=("both", "filename", "caption"),
+        default="both",
+        help="Machine-mode fields to search",
+    )
+    p.add_argument(
+        "--file-types",
+        nargs="+",
+        choices=("pdf", "boardview", "archive", "firmware"),
+        help="Machine-mode file groups to download",
+    )
+    p.add_argument(
+        "--operation",
+        default="download",
+        choices=("download", "login", "logout", "config", "scan", "organize", "undo"),
+    )
+    p.add_argument("--plan-id", help="Machine-mode exact preview identifier")
+    p.add_argument("--data-dir", type=Path, help="Machine-mode state/session directory")
+    p.add_argument("--download-dir", type=Path, help="Machine-mode download directory")
+    p.add_argument("--organized-dir", type=Path, help="Machine-mode library directory")
     p.add_argument(
         "--apple", action="store_true", help="Download all Apple files (uses keyword filter)"
     )
@@ -462,4 +547,9 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    asyncio.run(main(parse_args()))
+    arguments = parse_args()
+    if arguments.json:
+        from native_engine import run
+
+        sys.exit(run(arguments))
+    asyncio.run(main(arguments))

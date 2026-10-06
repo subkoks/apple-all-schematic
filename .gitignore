@@ -32,3 +32,10 @@ __pycache__/
 !.codex/
 .codex/*
 !.codex/config.toml
+
+# Native build artifacts
+build/
+dist/
+*.egg-info/
+
+.venv-native-build/
