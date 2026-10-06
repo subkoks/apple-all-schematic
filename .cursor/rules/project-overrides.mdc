@@ -8,3 +8,10 @@ alwaysApply: true
 Global baseline: `~/AGENTS.md`. Hub: `~/Projects/AGENTS.md` when under `~/Projects/`.
 
 Add project-specific rules below.
+
+## Session boundary
+
+You choose where a session ends. Everything in a session colours every later turn.
+
+- One task per session. Do not start an unrelated task in the same session.
+- Finishing a task is the natural point to clear. End there instead of carrying residue forward.
