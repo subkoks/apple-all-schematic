@@ -41,6 +41,13 @@ Do not upload an unversioned old DMG from `dist/` when only an app/ZIP was rebui
 
 ## GitHub preparation and publication
 
+When the Codex runtime cannot use desktop GitHub authentication, run
+`./scripts/prepare_native_github.sh` from the repository in normal Terminal. It verifies the
+existing ZIP/DMG against their manifest, rejects changed production inputs, pushes committed
+source only, opens or reuses a draft PR, and waits for CI. Both native test jobs must pass before
+it creates a draft prerelease with the verified assets. It does not merge or publish. `--check`
+runs only the local release gates. Existing releases and unrelated working changes are preserved.
+
 `Native checks` adds Python and Intel Swift test jobs on PRs and main. Its
 [`macos-15-intel` runner](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 is a standard GitHub-hosted Intel runner. `Native release candidate` is a manually dispatched
