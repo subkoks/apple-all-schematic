@@ -1,18 +1,26 @@
 # BoardVault
 
 **Apple schematic & boardview downloader** — macOS desktop apps and a CLI that downloads and
-organizes Apple device schematics and boardview files from public Telegram channels. Clean
-originals, no watermarks.
+organizes Apple device schematics and boardview files from public Telegram channels.
 
-![BoardVault — dark](docs/images/screenshot-dark.png)
+![BoardVault native — compact downloads in dark appearance](docs/images/native-download-dark.png)
 
-The screenshots above and below show the retained Qt interface. The native interface and its
-release candidate are described in the [native guide](docs/NATIVE_USER_GUIDE.md).
+Native SwiftUI interface: configurable search, compact channel progress, and a collapsed Activity
+log. Intel release candidate **2.1.0-rc.1**; the existing Qt **2.0.0** app remains available.
 
 <details>
-<summary>Light theme</summary>
+<summary>Native light appearance</summary>
 
-![BoardVault — light](docs/images/screenshot-light.png)
+![BoardVault native — light](docs/images/native-download-light.png)
+
+</details>
+
+<details>
+<summary>Existing Qt interface</summary>
+
+![BoardVault Qt — dark](docs/images/screenshot-dark.png)
+
+![BoardVault Qt — light](docs/images/screenshot-light.png)
 
 </details>
 
@@ -35,12 +43,15 @@ BoardVault clients before accessing shared state. No sessions are copied automat
 
 ## Install (macOS apps)
 
-**Native candidate:** use the versioned native ZIP or DMG from a verified candidate release.
+**Native candidate:** find the versioned native ZIP or DMG on the
+[GitHub releases page](https://github.com/subkoks/apple-all-schematic/releases) when published.
 Unzip or mount it and drag BoardVault.app into Applications. The local preparation command is
 `./scripts/build_native_app.sh`; release assets and hashes are written to
 `dist/releases/2.1.0-rc.1-x86_64/`. See the [native guide](docs/NATIVE_USER_GUIDE.md) and
 [candidate release notes](docs/releases/2.1.0-rc.1.md). Publication is tracked separately from
 local preparation; a candidate is not a claim of final platform acceptance.
+The native implementation merged in [PR #40](https://github.com/subkoks/apple-all-schematic/pull/40);
+Python and Intel Swift CI passed. See [verification](docs/native-verification.md) for remaining checks.
 
 **Qt app (2.0.0):**
 
