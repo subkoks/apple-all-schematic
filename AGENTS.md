@@ -4,9 +4,9 @@ Repo-specific instructions. Global baseline: `~/AGENTS.md`.
 
 ## Precedence
 
-1. This file (project-specific)
+1. `~/AGENTS.md` (canonical personal policy)
 2. `~/Projects/AGENTS.md` (hub — if applicable)
-3. `~/AGENTS.md` (global)
+3. This file (project-specific additions that do not contradict canonical policy)
 
 Add only project-specific rules here.
 
