@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240" role="img" aria-labelledby="title">
+<title id="title">BoardVault. For macOS. — Native macOS / Repair tools</title>
+<rect width="360" height="240" rx="8" fill="#111110"/>
+<circle cx="28" cy="32" r="4" fill="#FF7F0E"/>
+<text x="42" y="37" fill="#B5B0A8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" letter-spacing="1.5">BLACK.TERMINAL</text>
+<text x="24" y="94" fill="#F3F0EB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="36" font-weight="600" letter-spacing="-1.5">BoardVault.</text>
+<text x="24" y="139" fill="#F3F0EB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="36" font-weight="600" letter-spacing="-1.5">For macOS.</text>
+<path d="M24 189H336" stroke="#393632"/>
+<text x="24" y="215" fill="#B5B0A8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="400" letter-spacing="0.5">SCHEMATICS / BOARDVIEWS / LIBRARY</text>
+<text x="24" y="169" fill="#FF7F0E" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="400" letter-spacing="1.2">NATIVE MACOS / REPAIR TOOLS</text>
+</svg>
