@@ -1,12 +1,25 @@
-# BoardVault
+<h1>
+  <picture>
+    <source media="(max-width: 600px)" srcset="assets/readme/hero-mobile.svg">
+    <img src="assets/readme/hero.svg" width="100%" alt="BoardVault — BLACK.TERMINAL">
+  </picture>
+</h1>
 
-**Apple schematic & boardview downloader** — macOS desktop apps and a CLI that downloads and
-organizes Apple device schematics and boardview files from public Telegram channels.
+BoardVault downloads and organizes Apple device schematics and boardview files from public
+Telegram channels. A native macOS interface, the existing Qt app, and a CLI share the Python engine.
+
+**[Install](#install-macos-apps)** · [Interface](#interface) · [CLI](#cli) · [Build](#build-from-source) · [Native app](#native-swiftui-app) · [Documentation](#documentation)
+
+**Native release candidate: 2.1.0-rc.1 · macOS 13+ · Intel.** The existing Qt **2.0.0** app remains
+available. Native builds are ad-hoc signed, without Developer ID signing or notarization. See
+[installation](#install-macos-apps) for downloads and [verification](docs/native-verification.md)
+for the remaining platform checks.
+
+## Interface
 
 ![BoardVault native — compact downloads in dark appearance](docs/images/native-download-dark.png)
 
-Native SwiftUI interface: configurable search, compact channel progress, and a collapsed Activity
-log. Intel release candidate **2.1.0-rc.1**; the existing Qt **2.0.0** app remains available.
+Configurable search, compact channel progress, and a collapsed Activity log.
 
 <details>
 <summary>Native light appearance</summary>
@@ -153,6 +166,9 @@ The existing PySide6 GUI and its packaging scripts remain unchanged. The native 
 `native/BoardVault/` with no third-party Swift dependencies. It targets macOS 13 and Intel x86_64;
 actual execution has been checked on this Intel Tahoe Mac, not on a separate Ventura installation.
 
+<details>
+<summary>Native development, tests, and local packaging</summary>
+
 ```bash
 # Development (uses the repo .venv Python sidecar; create it with uv venv if absent)
 uv pip install --python .venv/bin/python -e '.[dev]'
@@ -189,6 +205,8 @@ ad-hoc signed, not Developer ID signed or notarized. The native bundle identifie
 Versioned ZIP/DMG assets, `SHA256SUMS`, source metadata, and release notes are prepared under
 `dist/releases/2.1.0-rc.1-x86_64/`. App-only builds include a verified ZIP. See
 [release preparation](docs/RELEASING_NATIVE.md) before tagging or publishing.
+
+</details>
 
 In the native app:
 
@@ -229,8 +247,8 @@ See [ADR 0002](docs/decisions/0002-native-swiftui-frontend.md) for the IPC contr
 
 ## Troubleshooting
 
-- **"BoardVault is damaged / from an unidentified developer":** it's unsigned — use the right-click →
-  Open or `xattr` step in **Install** above.
+- **"BoardVault is damaged / from an unidentified developer":** it's unsigned — follow the
+  per-app **Open Anyway** instructions in [Install](#install-macos-apps).
 - **Login loops / wrong code:** re-open **Settings → Account → Log out**, then Start again.
 - **A channel won't resolve:** make sure the `@name` is exact and the channel is public/you've joined it.
 
@@ -267,3 +285,7 @@ does not host, rehost, or distribute any files itself.
 
 MIT — see [LICENSE](LICENSE). Built with [Telethon](https://github.com/LonamiWebs/Telethon),
 [PySide6](https://doc.qt.io/qtforpython/), and [qasync](https://github.com/CabbageDevelopment/qasync).
+
+---
+
+<img src="assets/readme/dot.svg" width="12" height="12" alt=""> **BLACK.TERMINAL** · [GitHub](https://github.com/subkoks)
