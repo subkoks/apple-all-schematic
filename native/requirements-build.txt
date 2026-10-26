@@ -24,13 +24,13 @@ pyasn1==0.6.4
     # via rsa
 pyinstaller==6.22.3
     # via apple-all-schematic (pyproject.toml)
-pyinstaller-hooks-contrib==2026.8
+pyinstaller-hooks-contrib==2026.9
     # via pyinstaller
 python-dotenv==1.2.4
     # via apple-all-schematic (pyproject.toml)
 rsa==4.9.1
     # via telethon
-setuptools==84.0.0
+setuptools==84.2.1
     # via pyinstaller
 telethon==1.45.0
     # via apple-all-schematic (pyproject.toml)
