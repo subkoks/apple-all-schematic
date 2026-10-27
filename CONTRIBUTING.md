@@ -60,6 +60,11 @@ Native release preparation uses `native/release.json` and
 [RELEASING_NATIVE.md](docs/RELEASING_NATIVE.md). A GitHub workflow file passing actionlint
 locally does not prove that its jobs have run on GitHub.
 
+The required `sanity` status is the final job in Native checks. It passes only
+after the reusable syntax workflow, Python tests/lint, and Intel Swift tests
+all succeed; failed, cancelled, or skipped prerequisites fail the gate. Keep
+this status name stable because the default-branch ruleset requires it.
+
 ## Reporting bugs and feature requests
 
 Use the issue templates: `Bug report` or `Feature request`. Security issues
