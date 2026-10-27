@@ -14,6 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  syntax:
+    uses: ./.github/workflows/pr-check.yml
+
   python:
     name: Python tests
     runs-on: ubuntu-latest
@@ -41,4 +44,20 @@ jobs:
         with:
           persist-credentials: false
       - run: swift test --package-path native/BoardVault --arch x86_64
+
+  sanity:
+    name: sanity
+    needs: [syntax, python, swift]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every verification job to pass
+        env:
+          SYNTAX_RESULT: ${{ needs.syntax.result }}
+          PYTHON_RESULT: ${{ needs.python.result }}
+          SWIFT_RESULT: ${{ needs.swift.result }}
+        run: |
+          test "$SYNTAX_RESULT" = success
+          test "$PYTHON_RESULT" = success
+          test "$SWIFT_RESULT" = success
 
