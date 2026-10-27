@@ -3,16 +3,17 @@
 ## Project Overview
 
 - **Name:** BoardVault (repo slug `apple-all-schematic`)
-- **Type:** macOS desktop app (PySide6) + CLI — Telegram scraper for Apple device schematics
-- **Stack:** Python 3.10+ · Telethon · PySide6 + qasync (GUI) · PyInstaller + dmgbuild (packaging)
-- **Status:** Active — desktop app shipped (BoardVault.dmg), iterating on features
+- **Type:** Native SwiftUI macOS app candidate, existing PySide6 app, and CLI — Telegram scraper for Apple device schematics
+- **Stack:** SwiftPM + SwiftUI (native app) · Python 3.10+ · Telethon · PySide6 + qasync (existing GUI) · PyInstaller + dmgbuild (packaging)
+- **Status:** Native 2.1.0-rc.1 candidate (macOS 13+, Intel); existing Qt 2.0.0 remains available. Native builds are ad-hoc signed, not notarized. See `README.md` and `docs/native-verification.md` for current acceptance limits.
 - **Repo:** github.com/subkoks/apple-all-schematic
 
 ## Architecture
 
-- **Pattern:** Single async script with CLI argument parsing + file organizer
-- **Entry point:** `src/tg_schematic_downloader.py` (291 lines) — Telegram downloader
-- **Organizer:** `src/organize_downloads.py` (320 lines) — categorizes files by brand/product
+- **Pattern:** Shared Python downloader/classifier with CLI, in-process Qt GUI, and a native SwiftUI frontend using a JSON-lines sidecar. See `docs/architecture.md`.
+- **CLI entry point:** `src/tg_schematic_downloader.py` — Telegram downloader
+- **Organizer:** `src/organize_downloads.py` — categorizes files by brand/product
+- **Native frontend:** `native/BoardVault/` — SwiftPM app plus `BoardVaultCore`; `src/native_engine.py`, `src/native_search.py`, and `src/native_organizer.py` provide its Python sidecar.
 - **State:** JSON file at `data/state.json` — tracks downloaded files by `channel:message_id`
 - **Auth:** Telethon session file at `data/tg_scraper_session.session`
 - **Downloads:** Raw files in `data/downloads/<channel_name>/`, organized in `data/organized/<category>/`
@@ -50,6 +51,9 @@
 
 ## Commands
 
+- **Native development:** `swift run --package-path native/BoardVault BoardVault` (requires the repo `.venv` sidecar; see `README.md`)
+- **Native Swift tests:** `swift test --package-path native/BoardVault --arch x86_64` (macOS)
+- **Offline Python tests:** `PYTHON_DOTENV_DISABLED=1 uv run --extra dev pytest -q`
 - **Install:** `pip install -r requirements.txt`
 - **Full run:** `python src/tg_schematic_downloader.py --apple --resume`
 - **Test run:** `python src/tg_schematic_downloader.py --apple --limit 2000`
