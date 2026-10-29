@@ -7,22 +7,32 @@ name: auto-merge
 
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, edited]
 
 permissions:
   contents: write
   pull-requests: write
+
+# Explicit opt-in: owner adds automerge-approved and the PR body marker
+# Automerge-approved-head: <full current head SHA>. New commits invalidate it.
+# Removing the label stops future enable requests; cancel already-armed auto-merge
+# manually in GitHub. Required checks/reviews still apply.
 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
     # Only same-repo branches (owner/collaborator PRs + Dependabot); external forks are skipped.
     if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.base.ref == 'main' &&
+      contains(github.event.pull_request.labels.*.name, 'automerge-approved') &&
+      contains(github.event.pull_request.body, format('Automerge-approved-head: {0}', github.event.pull_request.head.sha)) &&
       github.event.pull_request.draft == false &&
       github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Enable auto-merge
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --auto --squash --match-head-commit "$PR_HEAD_SHA" "$PR_URL"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
