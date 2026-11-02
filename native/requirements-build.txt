@@ -20,7 +20,7 @@ packaging==26.3
     #   pyinstaller-hooks-contrib
 pyaes==1.6.1
     # via telethon
-pyasn1==0.6.4
+pyasn1==0.6.5
     # via rsa
 pyinstaller==6.22.3
     # via apple-all-schematic (pyproject.toml)
