@@ -3,7 +3,9 @@
 ## Install and launch
 
 The native app requires an Intel Mac and macOS 13 or later. Open the native DMG, or unzip the
-native ZIP, and drag BoardVault.app into Applications. The Qt app has the same displayed name;
+native ZIP from [GitHub releases](https://github.com/subkoks/apple-all-schematic/releases),
+and drag BoardVault.app into Applications. Choose the asset ending in `macos-x86_64.dmg` or
+`macos-x86_64.zip`; the older `BoardVault.dmg` belongs to the Qt app. The Qt app has the same displayed name;
 keep the apps in separate folders if retaining both.
 
 This free build is ad-hoc signed, without Apple notarization. If macOS blocks a downloaded app,

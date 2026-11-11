@@ -12,7 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   this `CHANGELOG.md`, `.github/CODEOWNERS`, `.github/ISSUE_TEMPLATE/*`,
   `.github/pull_request_template.md`, and `.github/dependabot.yml`.
 
-## 2.1.0-rc.1 — Native candidate (not published)
+## 2.1.0-rc.1 — Native release candidate
 
 ### Added
 
@@ -39,8 +39,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Known limits
 
-- Candidate desktop, fresh-login, Keychain, Quick Look, notifications, and actual Ventura
-  acceptance have manual gates. See [release preparation](docs/RELEASING_NATIVE.md).
+- Desktop fixture acceptance and Python/Intel Swift CI passed. Fresh-login, Keychain, Quick Look,
+  notifications, and actual Ventura execution remain unverified. See [release preparation](docs/RELEASING_NATIVE.md).
 - Intel only; ad-hoc signed without Developer ID notarization. Universal binaries are deferred.
 
 ## [2.0.0] - 2026-06-28

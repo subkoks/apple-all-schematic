@@ -2,8 +2,9 @@
 
 ## Release candidate 2.1.0-rc.1
 
-Built from committed source `82b7fb3` (release implementation `53701fc`), bundle build **20101**. No GitHub push,
-tag, PR, workflow dispatch, or release publication was performed. A local source/diff review
+Built from committed source `82b7fb3` (release implementation `53701fc`), bundle build **20101**.
+The native implementation merged through [PR #40](https://github.com/subkoks/apple-all-schematic/pull/40)
+on 2026-10-06, as `12b54a1`. The candidate release is still a draft at the latest live check. A local source/diff review
 fixed channel failure/no-match states, search-specific resume counts, idle speed, repeated count
 refreshes, and the default/minimum-width progress layout. This was a local review, not an
 independent security audit.
@@ -28,11 +29,20 @@ independent security audit.
   (`build/native-smoke-rs0ony_v/ui-smoke.json`), and managed DMG creation failed with
   `Device not configured`. The subsequent desktop run passed; these are no longer candidate
   blockers. Failed evidence is retained.
-- **PENDING:** GitHub jobs have not run. Fresh login, actual Ventura execution, Keychain,
+- **PASS:** final PR [Native checks](https://github.com/subkoks/apple-all-schematic/actions/runs/37395186951)
+  and [sanity check](https://github.com/subkoks/apple-all-schematic/actions/runs/37395187085).
+  Local recheck: 160 Python tests plus 56 subtests, 15 Swift tests, Ruff, shellcheck and actionlint.
+- **PASS:** draft release `404188029` contains both archives, source manifest, checksums, and notes.
+  GitHub-reported archive digests and sizes match the local manifest. Public publication remains
+  separate from the successful source merge.
+- **PENDING:** fresh login, actual Ventura execution, Keychain,
   Quick Look and notification acceptance remain manual checks. Earlier user download screenshots
   establish earlier app behavior, not final-candidate acceptance.
 
 See [RELEASING_NATIVE.md](RELEASING_NATIVE.md) for the exact gates and publication boundary.
+
+The sections below are historical snapshots; their older DMG and pending-status statements
+do not override the current candidate results above.
 
 ## Earlier implementation evidence
 
@@ -146,4 +156,5 @@ To repeat the fixture checks without Telegram access:
 ```
 
 The pre-existing staged `.codex/config.toml`, `.cursor/rules/project-overrides.mdc`, and `AGENTS.md`
-changes were preserved and excluded from milestone commits. Nothing was pushed or published.
+changes were preserved and excluded from milestone commits; the user subsequently committed
+them separately. The implementation was later pushed and merged, as recorded above.

@@ -1,25 +1,24 @@
 name: PR Check
 
-# Minimal pull_request gate so branch protection has a status check to require
-# (which is what lets auto-merge wait for "green"). Lenient by design: it only
-# fails on real breakage (syntax errors), never on style, and passes cleanly on
-# repos with no code.
+# Reusable syntax checks. Native checks calls this workflow and reports the
+# required `sanity` gate only after syntax, Python, and Swift all pass.
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  sanity:
-    name: sanity
+  syntax:
+    name: syntax
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
       - name: Python syntax

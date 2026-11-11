@@ -1,18 +1,42 @@
-# BoardVault
+<h1>
+  <picture>
+    <source media="(max-width: 600px)" srcset="assets/readme/hero-mobile.svg">
+    <img src="assets/readme/hero.svg" width="100%" alt="BoardVault — BLACK.TERMINAL">
+  </picture>
+</h1>
 
-**Apple schematic & boardview downloader** — macOS desktop apps and a CLI that downloads and
-organizes Apple device schematics and boardview files from public Telegram channels. Clean
-originals, no watermarks.
+BoardVault downloads and organizes Apple device schematics and boardview files from public
+Telegram channels. A native macOS interface, the existing Qt app, and a CLI share the Python engine.
 
-![BoardVault — dark](docs/images/screenshot-dark.png)
+**[Install](#install-macos-apps)** · [Interface](#interface) · [CLI](#cli) · [Build](#build-from-source) · [Native app](#native-swiftui-app) · [Documentation](#documentation)
+
+**Native release candidate: 2.1.0-rc.1 · macOS 13+ · Intel.** The existing Qt **2.0.0** app remains
+available. Native builds are ad-hoc signed, without Developer ID signing or notarization. See
+[installation](#install-macos-apps) for downloads and [verification](docs/native-verification.md)
+for the remaining platform checks.
+
+## Interface
+
+![BoardVault native — compact downloads in dark appearance](docs/images/native-download-dark.png)
+
+Configurable search, compact channel progress, and a collapsed Activity log.
 
 The screenshots above and below show the retained Qt interface. The native interface and its
 release candidate are described in the [native guide](docs/NATIVE_USER_GUIDE.md).
 
 <details>
-<summary>Light theme</summary>
+<summary>Native light appearance</summary>
 
-![BoardVault — light](docs/images/screenshot-light.png)
+![BoardVault native — light](docs/images/native-download-light.png)
+
+</details>
+
+<details>
+<summary>Existing Qt interface</summary>
+
+![BoardVault Qt — dark](docs/images/screenshot-dark.png)
+
+![BoardVault Qt — light](docs/images/screenshot-light.png)
 
 </details>
 
@@ -35,12 +59,15 @@ BoardVault clients before accessing shared state. No sessions are copied automat
 
 ## Install (macOS apps)
 
-**Native candidate:** use the versioned native ZIP or DMG from a verified candidate release.
+**Native candidate:** find the versioned native ZIP or DMG on the
+[GitHub releases page](https://github.com/subkoks/apple-all-schematic/releases) when published.
 Unzip or mount it and drag BoardVault.app into Applications. The local preparation command is
 `./scripts/build_native_app.sh`; release assets and hashes are written to
 `dist/releases/2.1.0-rc.1-x86_64/`. See the [native guide](docs/NATIVE_USER_GUIDE.md) and
 [candidate release notes](docs/releases/2.1.0-rc.1.md). Publication is tracked separately from
 local preparation; a candidate is not a claim of final platform acceptance.
+The native implementation merged in [PR #40](https://github.com/subkoks/apple-all-schematic/pull/40);
+Python and Intel Swift CI passed. See [verification](docs/native-verification.md) for remaining checks.
 
 **Qt app (2.0.0):**
 
@@ -142,6 +169,9 @@ The existing PySide6 GUI and its packaging scripts remain unchanged. The native 
 `native/BoardVault/` with no third-party Swift dependencies. It targets macOS 13 and Intel x86_64;
 actual execution has been checked on this Intel Tahoe Mac, not on a separate Ventura installation.
 
+<details>
+<summary>Native development, tests, and local packaging</summary>
+
 ```bash
 # Development (uses the repo .venv Python sidecar; create it with uv venv if absent)
 uv pip install --python .venv/bin/python -e '.[dev]'
@@ -178,6 +208,8 @@ ad-hoc signed, not Developer ID signed or notarized. The native bundle identifie
 Versioned ZIP/DMG assets, `SHA256SUMS`, source metadata, and release notes are prepared under
 `dist/releases/2.1.0-rc.1-x86_64/`. App-only builds include a verified ZIP. See
 [release preparation](docs/RELEASING_NATIVE.md) before tagging or publishing.
+
+</details>
 
 In the native app:
 
@@ -218,8 +250,8 @@ See [ADR 0002](docs/decisions/0002-native-swiftui-frontend.md) for the IPC contr
 
 ## Troubleshooting
 
-- **"BoardVault is damaged / from an unidentified developer":** it's unsigned — use the right-click →
-  Open or `xattr` step in **Install** above.
+- **"BoardVault is damaged / from an unidentified developer":** it's unsigned — follow the
+  per-app **Open Anyway** instructions in [Install](#install-macos-apps).
 - **Login loops / wrong code:** re-open **Settings → Account → Log out**, then Start again.
 - **A channel won't resolve:** make sure the `@name` is exact and the channel is public/you've joined it.
 
@@ -256,3 +288,7 @@ does not host, rehost, or distribute any files itself.
 
 MIT — see [LICENSE](LICENSE). Built with [Telethon](https://github.com/LonamiWebs/Telethon),
 [PySide6](https://doc.qt.io/qtforpython/), and [qasync](https://github.com/CabbageDevelopment/qasync).
+
+---
+
+<img src="assets/readme/dot.svg" width="12" height="12" alt=""> **BLACK.TERMINAL** · [GitHub](https://github.com/subkoks)

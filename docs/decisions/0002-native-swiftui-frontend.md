@@ -84,3 +84,8 @@ persistent Git settings and do not access the key.]
 
 See [native-verification.md](../native-verification.md) for final build, desktop smoke-test and
 DMG evidence, plus the remaining real-account and platform acceptance checks.
+
+[DECISION: publish 2.1.0-rc.1 as a prerelease after CI and archive-digest verification, retaining
+explicitly unverified account and platform checks in its notes. The user authorized release
+completion; a stable release must wait for those acceptance checks. Keep Qt 2.0.0 as the stable
+release and retain the binary manifest's original source commit when updating documentation.]

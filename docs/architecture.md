@@ -127,6 +127,11 @@ then writes versioned assets, checksums and a source manifest under `dist/releas
 GitHub workflows test Python and Intel Swift; the manual packaging workflow creates artifacts
 without tags or release publication. See [RELEASING_NATIVE.md](RELEASING_NATIVE.md).
 
+Publication helpers are separate from building. They verify uploaded asset digests, wait for CI,
+and publish only the prepared prerelease through the authenticated GitHub CLI. Documentation and
+acceptance notes can be updated after a binary build; the archive manifest retains its original
+source commit. See the [focused release review](native-release-review.md) for the current scope.
+
 `--ui-smoke` only runs when `BOARDVAULT_FIXTURE_ROOT` is explicitly provided. It bypasses normal
 preferences and uses fixture files for scan/organize/undo. Window captures, logs and a JSON report
 stay under that fixture root. It never performs a Telegram or Keychain operation.

@@ -1,7 +1,7 @@
 # Preparing a native GitHub release
 
 Candidate: **2.1.0-rc.1**, intended tag **native-v2.1.0-rc.1**. No tag or release is created by
-the scripts. The native version/build has one source: `native/release.json`. Python/Qt stay at
+the build scripts. The native version/build has one source: `native/release.json`. Python/Qt stay at
 2.0.0; the native candidate has a separate bundle identifier and release asset names.
 
 ## Local gates
@@ -41,6 +41,20 @@ Do not upload an unversioned old DMG from `dist/` when only an app/ZIP was rebui
 
 ## GitHub preparation and publication
 
+Current checkpoint: the native implementation merged through PR #40, Python/Intel Swift CI and
+sanity checks passed, and draft release 404188029 has verified uploads. This is a prerelease;
+the unverified account/platform checks remain in its notes. See
+[verification](native-verification.md) and the [focused review](native-release-review.md).
+
+For the prepared `docs/native-release-polish` follow-up, run
+`./scripts/finalize_native_release.sh` in normal Terminal. It verifies the existing uploaded
+archive digests/source commit, opens a draft documentation PR, waits for all native and sanity
+checks, and merges without an administrative bypass. It backs up and updates only the notes
+attachment/body, then publishes the existing candidate as a prerelease without marking it Latest.
+It does not replace the archives or alter the Qt stable release. `--check` verifies local gates
+without GitHub mutations. This command performs the already-authorized publication; it is not
+an additional platform acceptance test.
+
 When the Codex runtime cannot use desktop GitHub authentication, run
 `./scripts/prepare_native_github.sh` from the repository in normal Terminal. It verifies the
 existing ZIP/DMG against their manifest, rejects changed production inputs, pushes committed
@@ -58,9 +72,13 @@ Review the branch diff, preserve unrelated policy/config work, and push/open a P
 the user's authorization. Keep a preparation PR in draft while gates are pending: the existing
 auto-merge workflow enables auto-merge for non-draft same-repository PRs. Once the new jobs have
 actually run, require their verified check names in branch protection before marking the PR ready.
-After required checks and manual acceptance, a reviewed release can
+After required checks, a reviewed prerelease with explicit deferred platform checks can
 use `docs/releases/2.1.0-rc.1.md` as its body and the versioned assets as uploads. Use a prerelease
 for this candidate. Inspect the uploaded checksums and manifest before making it available.
+
+Stable promotion requires completion of the deferred account/platform acceptance. Updated release
+notes may follow the original binary build: `release.json` continues to identify the source that
+produced the archives, while the documentation PR records subsequent acceptance and wording.
 
 Developer ID signing/notarization, universal binaries, and final Ventura acceptance are deferred.
 Do not claim Apple notarization for these ad-hoc signed builds.
