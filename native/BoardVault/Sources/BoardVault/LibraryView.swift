@@ -38,13 +38,8 @@ struct LibraryView: View {
             }
             TextField("Search filenames", text: $search)
             if loading { ProgressView("Reading library…") }
-            if nodes.isEmpty && !loading {
-                VStack(spacing: Layout.spacing) {
-                    Image(systemName: "books.vertical").font(.largeTitle).foregroundStyle(.secondary)
-                    Text(search.isEmpty ? "Your library is empty" : "No matching files").font(.headline)
-                    Button("Go to Organize") { model.section = "Organize" }
-                }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+            // Keep the list mounted so a search refresh preserves its keyboard focus.
+            ZStack {
                 List(selection: $selection) {
                     OutlineGroup(nodes, children: \.children) { node in
                         Label(node.name, systemImage: node.isDirectory ? "folder" : "doc")
@@ -57,6 +52,13 @@ struct LibraryView: View {
                             .onTapGesture(count: 2) { NSWorkspace.shared.open(node.url) }
                     }
                 }.listStyle(.inset)
+                if nodes.isEmpty && !loading {
+                    VStack(spacing: Layout.spacing) {
+                        Image(systemName: "books.vertical").font(.largeTitle).foregroundStyle(.secondary)
+                        Text(search.isEmpty ? "Your library is empty" : "No matching files").font(.headline)
+                        Button("Go to Organize") { model.section = "Organize" }
+                    }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
             HStack {
                 Button("Quick Look") { if let selectedURL { PreviewController.shared.show(selectedURL) } }
