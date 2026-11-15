@@ -21,6 +21,9 @@ for the remaining platform checks.
 
 Configurable search, compact channel progress, and a collapsed Activity log.
 
+The screenshots above and below show the retained Qt interface. The native interface and its
+release candidate are described in the [native guide](docs/NATIVE_USER_GUIDE.md).
+
 <details>
 <summary>Native light appearance</summary>
 
