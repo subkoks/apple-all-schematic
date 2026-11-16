@@ -24,7 +24,7 @@ pyasn1==0.6.5
     # via rsa
 pyinstaller==6.22.3
     # via apple-all-schematic (pyproject.toml)
-pyinstaller-hooks-contrib==2026.9
+pyinstaller-hooks-contrib==2026.10
     # via pyinstaller
 python-dotenv==1.2.4
     # via apple-all-schematic (pyproject.toml)
