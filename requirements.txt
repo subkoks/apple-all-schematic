@@ -17,9 +17,9 @@ rsa==4.9.1 \
     --hash=sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762 \
     --hash=sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75
     # via telethon
-telethon==1.45.0 \
-    --hash=sha256:339e24c83aedc9f12cbe389264627edc49779e4289c535aa90aafc4ce62f7972 \
-    --hash=sha256:4cb7ae269b8ab9dad9fc490b859f0bc2f885121e990f5b20407b1faa0db2a1d9
+telethon==1.46.0 \
+    --hash=sha256:8357f5719376a9c1ddf0999136a44594a5b21b453647f1e146c169483b6a67df \
+    --hash=sha256:c56e55e4a1f95fde556fe13459a542fc758e8ba501c0bf76f2fc5d8409fa81cb
     # via apple-all-schematic (pyproject.toml)
 tqdm==4.70.1 \
     --hash=sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73 \
